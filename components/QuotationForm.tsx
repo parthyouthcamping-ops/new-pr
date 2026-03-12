@@ -44,6 +44,7 @@ export default function QuotationForm({ initialData, isEdit = false }: Quotation
     const [step, setStep] = useState(1);
     const [isSaving, setIsSaving] = useState(false);
     const [uploadingField, setUploadingField] = useState<string | null>(null);
+    const activeUploads = useState(0); // [count, setCount]
     const totalSteps = 6;
 
     const CLOUDINARY_CLOUD = "dltxunwku";
@@ -123,10 +124,43 @@ ${designation}`;
     };
 
     const handleSave = async () => {
+        // Block save if any image upload is still running
+        if (activeUploads[0] > 0 || uploadingField !== null) {
+            toast.error("Please wait for all image uploads to complete before saving.");
+            return;
+        }
+
         setIsSaving(true);
         try {
+            // Scrub: ensure all photo fields contain only URL strings (http/https)
+            const isUrl = (v: unknown): v is string =>
+                typeof v === 'string' && (v.startsWith('http://') || v.startsWith('https://'));
+
+            const scrubHotels = (hotels: typeof formData.lowLevelHotels) =>
+                (hotels || []).map(h => ({
+                    ...h,
+                    photos: (h.photos || []).filter(isUrl)
+                }));
+
+            const scrubbedData = {
+                ...formData,
+                heroImage: isUrl(formData.heroImage) ? formData.heroImage : undefined,
+                experiencePhotos: (formData.experiencePhotos || []).filter(isUrl),
+                lowLevelHotels: scrubHotels(formData.lowLevelHotels),
+                highLevelHotels: scrubHotels(formData.highLevelHotels),
+                hotels: scrubHotels(formData.hotels),
+                itinerary: (formData.itinerary || []).map(day => ({
+                    ...day,
+                    photos: (day.photos || []).filter(isUrl)
+                })),
+                expert: {
+                    ...formData.expert!,
+                    photo: isUrl(formData.expert?.photo) ? formData.expert?.photo : undefined
+                }
+            };
+
             const finalData: Quotation = {
-                ...formData as Quotation,
+                ...scrubbedData as Quotation,
                 slug: formData.slug || generateSlug(formData.destination || "trip", formData.id || uuidv4()),
                 updatedAt: new Date().toISOString()
             };
@@ -161,10 +195,21 @@ ${designation}`;
         const file = e.target.files?.[0];
         if (!file) return;
 
+        if (file.size > 20 * 1024 * 1024) {
+            toast.error("Image must be under 20MB");
+            e.target.value = "";
+            return;
+        }
+
         const fieldKey = index !== undefined ? `${field}_${index}` : field;
         setUploadingField(fieldKey);
+        activeUploads[1](n => n + 1);
         try {
             const url = await uploadToCloudinary(file);
+            // Validate returned value is a proper URL before storing
+            if (!url || !url.startsWith('https://')) {
+                throw new Error('Invalid URL returned from Cloudinary');
+            }
             setFormData(prev => {
                 if (index !== undefined) {
                     if (field === 'hotels') {
@@ -200,6 +245,7 @@ ${designation}`;
             console.error(err);
             toast.error("Image upload failed. Please try again.");
         } finally {
+            activeUploads[1](n => n - 1);
             setUploadingField(null);
             e.target.value = "";
         }
@@ -246,13 +292,18 @@ ${designation}`;
                         )}
                         <Button 
                             onClick={handleSave} 
-                            disabled={isSaving}
+                            disabled={isSaving || activeUploads[0] > 0}
                             className="rounded-2xl shadow-xl shadow-primary/30 min-w-[140px]"
                         >
                             {isSaving ? (
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     Saving...
+                                </div>
+                            ) : activeUploads[0] > 0 ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Uploading...
                                 </div>
                             ) : (
                                 <><Save size={18} className="mr-2" /> {isEdit ? "Update Proposal" : "Save Proposal"}</>
@@ -940,8 +991,8 @@ ${designation}`;
                         Next Section <ChevronRight size={20} className="ml-2" />
                     </Button>
                 ) : (
-                    <Button onClick={handleSave} disabled={isSaving} className="rounded-2xl px-10 shadow-lg shadow-primary/20">
-                        {isSaving ? "Saving..." : <><Save size={20} className="mr-2" /> Save Proposal</>}
+                    <Button onClick={handleSave} disabled={isSaving || activeUploads[0] > 0} className="rounded-2xl px-10 shadow-lg shadow-primary/20">
+                        {isSaving ? "Saving..." : activeUploads[0] > 0 ? "Uploading..." : <><Save size={20} className="mr-2" /> Save Proposal</>}
                     </Button>
                 )}
             </div>
