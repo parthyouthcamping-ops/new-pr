@@ -285,32 +285,40 @@ ${designation}`;
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-3">
-                                        <Label className="font-semibold">Client Name</Label>
+                                        <Label htmlFor="clientName" className="font-semibold">Client Name</Label>
                                         <Input
+                                            id="clientName"
+                                            name="clientName"
                                             placeholder="e.g. Mr. & Mrs. Singh"
                                             value={formData.clientName || ""}
                                             onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="font-semibold">Destination</Label>
+                                        <Label htmlFor="destination" className="font-semibold">Destination</Label>
                                         <Input
+                                            id="destination"
+                                            name="destination"
                                             placeholder="e.g. Manali Luxury Escape"
                                             value={formData.destination || ""}
                                             onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="font-semibold">Pax Count</Label>
+                                        <Label htmlFor="pax" className="font-semibold">Pax Count</Label>
                                         <Input
+                                            id="pax"
+                                            name="pax"
                                             type="number"
                                             value={formData.pax}
                                             onChange={(e) => setFormData({ ...formData, pax: parseInt(e.target.value) })}
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="font-semibold">Standard (Low Level) Price (₹)</Label>
+                                        <Label htmlFor="lowLevelPrice" className="font-semibold">Standard (Low Level) Price (₹)</Label>
                                         <Input
+                                            id="lowLevelPrice"
+                                            name="lowLevelPrice"
                                             type="number"
                                             placeholder="Standard Option Price"
                                             className="font-semibold"
@@ -319,8 +327,10 @@ ${designation}`;
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label className="font-semibold">Luxury (High Level) Price (₹)</Label>
+                                        <Label htmlFor="highLevelPrice" className="font-semibold">Luxury (High Level) Price (₹)</Label>
                                         <Input
+                                            id="highLevelPrice"
+                                            name="highLevelPrice"
                                             type="number"
                                             placeholder="Luxury Option Price"
                                             className="font-black"
@@ -329,24 +339,30 @@ ${designation}`;
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label>Travel Dates From</Label>
+                                        <Label htmlFor="travelDateFrom">Travel Dates From</Label>
                                         <Input
+                                            id="travelDateFrom"
+                                            name="travelDateFrom"
                                             type="date"
                                             value={formData.travelDates?.from || ""}
                                             onChange={(e) => setFormData({ ...formData, travelDates: { ...formData.travelDates!, from: e.target.value } })}
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label>Travel Dates To</Label>
+                                        <Label htmlFor="travelDateTo">Travel Dates To</Label>
                                         <Input
+                                            id="travelDateTo"
+                                            name="travelDateTo"
                                             type="date"
                                             value={formData.travelDates?.to || ""}
                                             onChange={(e) => setFormData({ ...formData, travelDates: { ...formData.travelDates!, to: e.target.value } })}
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label>Duration (Auto-calculated)</Label>
+                                        <Label htmlFor="duration">Duration (Auto-calculated)</Label>
                                         <Input
+                                            id="duration"
+                                            name="duration"
                                             disabled
                                             className="bg-gray-50 font-semibold text-primary"
                                             value={formData.duration || "Nights / Days"}
@@ -381,7 +397,7 @@ ${designation}`;
                                                 </div>
                                             )}
                                         </label>
-                                        <input id="heroImage" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'heroImage')} />
+                                        <input id="heroImage" name="heroImage" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'heroImage')} />
                                     </div>
 
 
@@ -411,7 +427,7 @@ ${designation}`;
                                                 )}
                                                 <span className="text-[8px] font-black uppercase text-gray-400">{uploadingField === 'experiencePhotos' ? 'Uploading...' : 'Add Photo'}</span>
                                             </label>
-                                            <input id="experiencePhotos" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'experiencePhotos')} />
+                                            <input id="experiencePhotos" name="experiencePhotos" type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'experiencePhotos')} />
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-4 text-left">
@@ -431,7 +447,7 @@ ${designation}`;
                                                     </div>
                                                 )}
                                             </label>
-                                            <input id="expertPhoto" type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                            <input id="expertPhoto" name="expertPhoto" type="file" accept="image/*" className="hidden" onChange={async (e) => {
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
                                                 setUploadingField('expert_photo');
@@ -448,12 +464,16 @@ ${designation}`;
                                             }} />
                                             <div className="flex-1 space-y-2">
                                                 <Input
+                                                    id="expertName"
+                                                    name="expertName"
                                                     placeholder="Expert Name"
                                                     value={formData.expert?.name || ""}
                                                     className="h-10 text-xs font-semibold"
                                                     onChange={(e) => setFormData({ ...formData, expert: { ...formData.expert!, name: e.target.value } })}
                                                 />
                                                 <Input
+                                                    id="expertDesignation"
+                                                    name="expertDesignation"
                                                     placeholder="Expert Title"
                                                     value={formData.expert?.designation || ""}
                                                     className="h-10 text-xs font-semibold"
@@ -462,6 +482,8 @@ ${designation}`;
                                             </div>
                                         </div>
                                         <Input
+                                            id="expertWhatsapp"
+                                            name="expertWhatsapp"
                                             placeholder="WhatsApp Number"
                                             value={formData.expert?.whatsapp || ""}
                                             className="h-10 text-xs font-semibold"
@@ -510,23 +532,23 @@ ${designation}`;
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                                         <div className="md:col-span-2 space-y-4">
                                                             <div className="grid grid-cols-2 gap-4">
-                                                                <Input placeholder="Hotel Name" value={hotel.name} onChange={(e) => {
+                                                                <Input id={`lowHotelName_${index}`} name={`lowHotelName_${index}`} placeholder="Hotel Name" value={hotel.name} onChange={(e) => {
                                                                     const newH = [...(formData.lowLevelHotels || [])];
                                                                     newH[index].name = e.target.value;
                                                                     setFormData({ ...formData, lowLevelHotels: newH });
                                                                 }} />
-                                                                <Input placeholder="Location" value={hotel.location} onChange={(e) => {
+                                                                <Input id={`lowHotelLocation_${index}`} name={`lowHotelLocation_${index}`} placeholder="Location" value={hotel.location} onChange={(e) => {
                                                                     const newH = [...(formData.lowLevelHotels || [])];
                                                                     newH[index].location = e.target.value;
                                                                     setFormData({ ...formData, lowLevelHotels: newH });
                                                                 }} />
-                                                                <Input placeholder="Room Type" value={hotel.roomType} onChange={(e) => {
+                                                                <Input id={`lowHotelRoomType_${index}`} name={`lowHotelRoomType_${index}`} placeholder="Room Type" value={hotel.roomType} onChange={(e) => {
                                                                     const newH = [...(formData.lowLevelHotels || [])];
                                                                     newH[index].roomType = e.target.value;
                                                                     setFormData({ ...formData, lowLevelHotels: newH });
                                                                 }} />
                                                             </div>
-                                                            <Textarea placeholder="Description..." value={hotel.description} onChange={(e) => {
+                                                            <Textarea id={`lowHotelDesc_${index}`} name={`lowHotelDesc_${index}`} placeholder="Description..." value={hotel.description} onChange={(e) => {
                                                                 const newH = [...(formData.lowLevelHotels || [])];
                                                                 newH[index].description = e.target.value;
                                                                 setFormData({ ...formData, lowLevelHotels: newH });
@@ -545,7 +567,7 @@ ${designation}`;
                                                                     <Plus size={16} />
                                                                 )}
                                                             </label>
-                                                            <input id={`lowLevelHotel_${index}`} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'lowLevelHotels', true, index)} />
+                                                            <input id={`lowLevelHotel_${index}`} name={`lowLevelHotel_${index}`} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'lowLevelHotels', true, index)} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -576,23 +598,23 @@ ${designation}`;
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                                         <div className="md:col-span-2 space-y-4">
                                                             <div className="grid grid-cols-2 gap-4">
-                                                                <Input placeholder="Hotel Name" value={hotel.name} onChange={(e) => {
+                                                                <Input id={`highHotelName_${index}`} name={`highHotelName_${index}`} placeholder="Hotel Name" value={hotel.name} onChange={(e) => {
                                                                     const newH = [...(formData.highLevelHotels || [])];
                                                                     newH[index].name = e.target.value;
                                                                     setFormData({ ...formData, highLevelHotels: newH });
                                                                 }} />
-                                                                <Input placeholder="Location" value={hotel.location} onChange={(e) => {
+                                                                <Input id={`highHotelLocation_${index}`} name={`highHotelLocation_${index}`} placeholder="Location" value={hotel.location} onChange={(e) => {
                                                                     const newH = [...(formData.highLevelHotels || [])];
                                                                     newH[index].location = e.target.value;
                                                                     setFormData({ ...formData, highLevelHotels: newH });
                                                                 }} />
-                                                                <Input placeholder="Room Type" value={hotel.roomType} onChange={(e) => {
+                                                                <Input id={`highHotelRoomType_${index}`} name={`highHotelRoomType_${index}`} placeholder="Room Type" value={hotel.roomType} onChange={(e) => {
                                                                     const newH = [...(formData.highLevelHotels || [])];
                                                                     newH[index].roomType = e.target.value;
                                                                     setFormData({ ...formData, highLevelHotels: newH });
                                                                 }} />
                                                             </div>
-                                                            <Textarea placeholder="Description..." value={hotel.description} onChange={(e) => {
+                                                            <Textarea id={`highHotelDesc_${index}`} name={`highHotelDesc_${index}`} placeholder="Description..." value={hotel.description} onChange={(e) => {
                                                                 const newH = [...(formData.highLevelHotels || [])];
                                                                 newH[index].description = e.target.value;
                                                                 setFormData({ ...formData, highLevelHotels: newH });
@@ -611,7 +633,7 @@ ${designation}`;
                                                                     <Plus size={16} />
                                                                 )}
                                                             </label>
-                                                            <input id={`highLevelHotel_${index}`} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'highLevelHotels', true, index)} />
+                                                            <input id={`highLevelHotel_${index}`} name={`highLevelHotel_${index}`} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'highLevelHotels', true, index)} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -671,74 +693,80 @@ ${designation}`;
                                                     }} className="text-red-500"><Trash2 size={18} /></Button>
                                                 </div>
 
-                                                <div className="space-y-4">
-                                                    <Label className="font-semibold">Day {item.day} Title</Label>
-                                                    <Input
-                                                        placeholder="Title"
-                                                        value={item.title}
-                                                        onChange={(e) => {
-                                                            const newItin = [...(formData.itinerary || [])];
-                                                            newItin[index].title = e.target.value;
-                                                            setFormData({ ...formData, itinerary: newItin });
-                                                        }}
-                                                        className="bg-white font-black"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <Label className="font-semibold">Activities (One per line)</Label>
-                                                    <Textarea
-                                                        value={item.activities.join('\n')}
-                                                        onChange={(e) => {
-                                                            const newItin = [...(formData.itinerary || [])];
-                                                            newItin[index].activities = e.target.value.split('\n');
-                                                            setFormData({ ...formData, itinerary: newItin });
-                                                        }}
-                                                        className="bg-white font-semibold"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <Label className="font-semibold">Day Description</Label>
-                                                    <Textarea
-                                                        value={item.description}
-                                                        onChange={(e) => {
-                                                            const newItin = [...(formData.itinerary || [])];
-                                                            newItin[index].description = e.target.value;
-                                                            setFormData({ ...formData, itinerary: newItin });
-                                                        }}
-                                                        className="bg-white min-h-[100px] font-semibold"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <Label className="font-semibold">Daily Photos</Label>
-                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                        {item.photos?.map((photo, i) => (
-                                                            <div key={i} className="aspect-video rounded-2xl overflow-hidden relative group">
-                                                                <img src={photo} className="w-full h-full object-cover" />
-                                                                <button
-                                                                    onClick={() => {
-                                                                        const newItin = [...(formData.itinerary || [])];
-                                                                        newItin[index].photos.splice(i, 1);
-                                                                        setFormData({ ...formData, itinerary: newItin });
-                                                                    }}
-                                                                    className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
-                                                                >
-                                                                    <Trash2 size={14} />
-                                                                </button>
-                                                            </div>
-                                                        ))}
-                                                        <label htmlFor={`itinerary_photo_${index}`} className="aspect-video rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer hover:border-primary/40 transition-all bg-white group/upload flex-col gap-2">
-                                                            {uploadingField === `itinerary_${index}` ? (
-                                                                <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                                                            ) : (
-                                                                <ImageIcon size={24} className="text-gray-300" />
-                                                            )}
-                                                        </label>
-                                                        <input id={`itinerary_photo_${index}`} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'itinerary', true, index)} />
+                                                    <div className="space-y-4">
+                                                        <Label htmlFor={`itinerary_title_${index}`} className="font-semibold">Day {item.day} Title</Label>
+                                                        <Input
+                                                            id={`itinerary_title_${index}`}
+                                                            name={`itinerary_title_${index}`}
+                                                            placeholder="Title"
+                                                            value={item.title}
+                                                            onChange={(e) => {
+                                                                const newItin = [...(formData.itinerary || [])];
+                                                                newItin[index].title = e.target.value;
+                                                                setFormData({ ...formData, itinerary: newItin });
+                                                            }}
+                                                            className="bg-white font-black"
+                                                        />
                                                     </div>
-                                                </div>
+
+                                                    <div className="space-y-4">
+                                                        <Label htmlFor={`itinerary_activities_${index}`} className="font-semibold">Activities (One per line)</Label>
+                                                        <Textarea
+                                                            id={`itinerary_activities_${index}`}
+                                                            name={`itinerary_activities_${index}`}
+                                                            value={item.activities.join('\n')}
+                                                            onChange={(e) => {
+                                                                const newItin = [...(formData.itinerary || [])];
+                                                                newItin[index].activities = e.target.value.split('\n');
+                                                                setFormData({ ...formData, itinerary: newItin });
+                                                            }}
+                                                            className="bg-white font-semibold"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-4">
+                                                        <Label htmlFor={`itinerary_description_${index}`} className="font-semibold">Day Description</Label>
+                                                        <Textarea
+                                                            id={`itinerary_description_${index}`}
+                                                            name={`itinerary_description_${index}`}
+                                                            value={item.description}
+                                                            onChange={(e) => {
+                                                                const newItin = [...(formData.itinerary || [])];
+                                                                newItin[index].description = e.target.value;
+                                                                setFormData({ ...formData, itinerary: newItin });
+                                                            }}
+                                                            className="bg-white min-h-[100px] font-semibold"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-4">
+                                                        <Label htmlFor={`itinerary_photo_${index}`} className="font-semibold">Daily Photos</Label>
+                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                            {item.photos?.map((photo, i) => (
+                                                                <div key={i} className="aspect-video rounded-2xl overflow-hidden relative group">
+                                                                    <img src={photo} className="w-full h-full object-cover" />
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const newItin = [...(formData.itinerary || [])];
+                                                                            newItin[index].photos.splice(i, 1);
+                                                                            setFormData({ ...formData, itinerary: newItin });
+                                                                        }}
+                                                                        className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                            <label htmlFor={`itinerary_photo_${index}`} className="aspect-video rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer hover:border-primary/40 transition-all bg-white group/upload flex-col gap-2">
+                                                                {uploadingField === `itinerary_${index}` ? (
+                                                                    <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                                                                ) : (
+                                                                    <ImageIcon size={24} className="text-gray-300" />
+                                                                )}
+                                                            </label>
+                                                            <input id={`itinerary_photo_${index}`} name={`itinerary_photo_${index}`} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'itinerary', true, index)} />
+                                                        </div>
+                                                    </div>
                                             </div>
                                         </div>
                                     ))}
@@ -814,12 +842,12 @@ ${designation}`;
                                                     </div>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                         <div className="space-y-6">
-                                                            <Input placeholder="Heading" value={section.heading} onChange={(e) => {
+                                                            <Input id={`section_heading_${index}`} name={`section_heading_${index}`} placeholder="Heading" value={section.heading} onChange={(e) => {
                                                                 const n = [...(formData.customSections || [])];
                                                                 n[index].heading = e.target.value;
                                                                 setFormData({ ...formData, customSections: n });
                                                             }} />
-                                                            <Textarea placeholder="Description" value={section.description} onChange={(e) => {
+                                                            <Textarea id={`section_description_${index}`} name={`section_description_${index}`} placeholder="Description" value={section.description} onChange={(e) => {
                                                                 const n = [...(formData.customSections || [])];
                                                                 n[index].description = e.target.value;
                                                                 setFormData({ ...formData, customSections: n });
@@ -848,9 +876,11 @@ ${designation}`;
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                     <div className="space-y-4">
-                                        <Label className="font-semibold">Transport Mode</Label>
+                                        <Label htmlFor="transportOption" className="font-semibold">Transport Mode</Label>
                                         <div className="relative group/transport">
                                             <Input
+                                                id="transportOption"
+                                                name="transportOption"
                                                 placeholder="e.g. Flight, Private Car, Tempo Traveller..."
                                                 className="h-14 rounded-2xl border-2 border-gray-100 bg-white px-6 font-semibold focus:border-primary transition-all pr-12"
                                                 value={formData.transportOption || ""}
@@ -875,16 +905,20 @@ ${designation}`;
                                     </div>
 
                                     <div className="space-y-4">
-                                        <Label className="font-semibold">Inclusions (One per line)</Label>
+                                        <Label htmlFor="includes" className="font-semibold">Inclusions (One per line)</Label>
                                         <Textarea
+                                            id="includes"
+                                            name="includes"
                                             value={formData.includes?.join('\n')}
                                             onChange={(e) => setFormData({ ...formData, includes: e.target.value.split('\n') })}
                                             className="min-h-[150px]"
                                         />
                                     </div>
                                     <div className="space-y-4">
-                                        <Label className="font-semibold">Exclusions (One per line)</Label>
+                                        <Label htmlFor="exclusions" className="font-semibold">Exclusions (One per line)</Label>
                                         <Textarea
+                                            id="exclusions"
+                                            name="exclusions"
                                             value={formData.exclusions?.join('\n')}
                                             onChange={(e) => setFormData({ ...formData, exclusions: e.target.value.split('\n') })}
                                             className="min-h-[150px]"
