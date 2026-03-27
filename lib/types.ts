@@ -78,6 +78,7 @@ export type Quotation = {
     };
 
     status: "Draft" | "Published";
+    bookingStatus?: "pending" | "reserved" | "booked" | "cancelled";
     createdAt: string;
     updatedAt: string;
 };

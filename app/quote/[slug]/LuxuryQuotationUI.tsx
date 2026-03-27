@@ -2,7 +2,7 @@
 
 import { Quotation } from "@/lib/types";
 import { useBrandSettings } from "@/hooks/useBrandSettings";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { ImageSlider } from "@/components/ui/ImageSlider";
 import { GlassCard } from "@/components/ui/GlassCard";
 import {
@@ -20,10 +20,13 @@ import {
     MessageCircle as WhatsAppIcon,
     ArrowRight,
     Globe,
-    Smartphone
+    Smartphone,
+    Check,
+    Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 interface LuxuryQuotationUIProps {
     q: Quotation;
@@ -32,8 +35,89 @@ interface LuxuryQuotationUIProps {
 export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
     const { brand } = useBrandSettings();
     const [selectedTier, setSelectedTier] = useState<'standard' | 'luxury'>('standard');
+    const [booking, setBooking] = useState<any>(null);
+    const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [bookingForm, setBookingForm] = useState({ name: q.clientName, phone: '', email: '' });
+
+    const isBooked = q.bookingStatus === 'booked' || booking?.status === 'booked';
+
     const { scrollY } = useScroll();
     const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
+
+    useEffect(() => {
+        fetchBooking();
+    }, [q.slug]);
+
+    const fetchBooking = async () => {
+        try {
+            const res = await fetch(`/api/book?slug=${q.slug}`);
+            const data = await res.json();
+            if (data && !data.error) setBooking(data);
+        } catch (err) {
+            console.error('Failed to fetch booking status');
+        }
+    };
+
+    const handleBook = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const res = await fetch('/api/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tripSlug: q.slug,
+                    ...bookingForm
+                })
+            });
+            const data = await res.json();
+            if (res.ok && data.id) {
+                setBooking(data);
+                setIsBookingModalOpen(false);
+                toast.success("Your trip has been successfully booked!");
+                
+                // WhatsApp nudge
+                const message = encodeURIComponent(`Hi ${q.expert.name || 'Travel Expert'}, I just booked the ${q.destination} trip for ${bookingForm.name}! Looking forward to connecting.`);
+                window.open(`https://wa.me/${q.expert.whatsapp}?text=${message}`, '_blank');
+            } else {
+                toast.error(data.error || "Booking failed. Please try again.");
+            }
+        } catch (err) {
+            toast.error("Booking failed. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const renderBookingButton = (className?: string) => {
+        const isReserved = q.bookingStatus === 'reserved' || booking?.status === 'reserved';
+
+        if (isBooked) {
+            return null;
+        }
+
+        if (isReserved) {
+            return (
+                <Button 
+                    disabled
+                    className={`${className} flex items-center gap-2 bg-blue-500 hover:bg-blue-500 cursor-not-allowed`}
+                >
+                    <Check size={14} />
+                    Reserved
+                </Button>
+            );
+        }
+
+        return (
+            <Button 
+                onClick={() => setIsBookingModalOpen(true)}
+                className={className}
+            >
+                Confirm Booking
+            </Button>
+        );
+    };
 
     return (
         <div className="bg-white min-h-screen font-montserrat text-[#1a1a1a] selection:bg-primary/20 pdf-container overflow-x-hidden">
@@ -53,6 +137,14 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                 }
             `}</style>
 
+            {/* Booked Banner */}
+            {isBooked && (
+                <div className="bg-green-500 text-white w-full text-center py-3 px-4 font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-md z-[200] relative">
+                    <CheckCircle2 size={16} className="inline mr-2 -mt-1" />
+                    This trip is already booked
+                </div>
+            )}
+
             {/* Premium Branding Header */}
             <header className="sticky top-0 left-0 right-0 z-[100] bg-white/90 backdrop-blur-md h-20 md:h-[90px] flex items-center transition-all duration-300 border-b border-gray-100 no-print">
                 <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
@@ -62,18 +154,17 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                         ) : (
                             <h2 className="text-lg md:text-xl font-black tracking-tighter text-gray-900 uppercase">YOUTHCAMPING</h2>
                         )}
+                        <div className={`hidden sm:flex px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white shadow-sm ${
+                            q.bookingStatus === 'booked' ? 'bg-green-500' :
+                            q.bookingStatus === 'reserved' ? 'bg-blue-500' :
+                            q.bookingStatus === 'cancelled' ? 'bg-red-500' : 'bg-orange-400'
+                        }`}>
+                            {q.bookingStatus || 'pending'}
+                        </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                         <Button 
-                             onClick={() => {
-                                const message = encodeURIComponent(`Hi ${q.expert.name || 'Travel Expert'}, I want to book my ${q.destination} trip! Link: ${window.location.href}`);
-                                window.open(`https://wa.me/${q.expert.whatsapp}?text=${message}`, '_blank');
-                            }}
-                            className="rounded-xl font-black uppercase text-[8px] md:text-[10px] tracking-widest shadow-xl shadow-primary/20 h-10 md:h-12 px-4 md:px-8"
-                        >
-                            Confirm Booking
-                        </Button>
+                         {renderBookingButton("rounded-xl font-black uppercase text-[8px] md:text-[10px] tracking-widest shadow-xl shadow-primary/20 h-10 md:h-12 px-4 md:px-8")}
                     </div>
                 </div>
             </header>
@@ -410,16 +501,84 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                                         <span className="font-black text-white">Full Refund (T&C)</span>
                                     </div>
                                 </div>
-                                <Button 
-                                     onClick={() => window.open(`https://wa.me/${q.expert?.whatsapp}`, '_blank')}
-                                     className="w-full bg-primary text-white hover:bg-white hover:text-gray-900 py-8 rounded-2xl font-black uppercase tracking-widest transition-all">
-                                    Confirm with Coordinator
-                                </Button>
+                                {renderBookingButton("w-full bg-primary text-white hover:bg-white hover:text-gray-900 py-8 rounded-2xl font-black uppercase tracking-widest transition-all")}
                             </div>
                         </GlassCard>
                     </div>
                 </div>
             </section>
+
+            {/* Booking Modal */}
+            <AnimatePresence>
+                {isBookingModalOpen && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsBookingModalOpen(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative bg-white rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl"
+                        >
+                            <div className="p-8 md:p-12 space-y-8">
+                                <div className="space-y-2 text-center">
+                                    <span className="text-primary font-black uppercase tracking-[0.4em] text-[10px] italic">RESERVATION</span>
+                                    <h3 className="text-3xl font-black text-gray-900 uppercase">Secure Your Trip</h3>
+                                    <p className="text-sm text-gray-400 font-medium italic">Enter your details and our expert will reach out.</p>
+                                </div>
+
+                                <form onSubmit={handleBook} className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Full Name</label>
+                                        <input 
+                                            required
+                                            value={bookingForm.name}
+                                            onChange={e => setBookingForm({...bookingForm, name: e.target.value})}
+                                            className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold focus:border-primary outline-none transition-all"
+                                            placeholder="Enter your name"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">WhatsApp Phone</label>
+                                        <input 
+                                            required
+                                            type="tel"
+                                            value={bookingForm.phone}
+                                            onChange={e => setBookingForm({...bookingForm, phone: e.target.value})}
+                                            className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold focus:border-primary outline-none transition-all"
+                                            placeholder="+91 00000 00000"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Email Address</label>
+                                        <input 
+                                            required
+                                            type="email"
+                                            value={bookingForm.email}
+                                            onChange={e => setBookingForm({...bookingForm, email: e.target.value})}
+                                            className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold focus:border-primary outline-none transition-all"
+                                            placeholder="you@email.com"
+                                        />
+                                    </div>
+
+                                    <Button 
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="w-full bg-primary text-white py-8 rounded-2xl font-black uppercase tracking-widest h-auto mt-4"
+                                    >
+                                        {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirm Reservation'}
+                                    </Button>
+                                </form>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* Logistics & Expertise */}
             <section className="py-16 md:py-32 bg-gray-900 text-white rounded-3xl md:rounded-[5rem] mx-4 md:mx-6 mb-16 md:mb-32 p-8 md:p-20 pdf-section">
