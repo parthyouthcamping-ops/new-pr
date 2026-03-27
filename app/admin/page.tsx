@@ -424,26 +424,16 @@ ${expertDesignation}`;
                                             </td>
                                             <td className="px-8 py-6 text-right">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    {b.status === 'reserved' && (
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            className="h-10 rounded-xl text-green-600 hover:bg-green-50 hover:text-green-700 shadow-sm"
-                                                            onClick={() => updateBookingStatus(b.id, 'booked')}
-                                                        >
-                                                            <CheckCircle2 size={16} className="mr-2" /> 
-                                                            Confirm
-                                                        </Button>
-                                                    )}
-                                                    {b.status !== 'cancelled' && (
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            className="h-10 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-500 shadow-sm"
-                                                            onClick={() => updateBookingStatus(b.id, 'cancelled')}
-                                                        >
-                                                            <XCircle size={16} className="mr-2" /> 
-                                                            Cancel
-                                                        </Button>
-                                                    )}
+                                                    <select
+                                                        value={b.status || 'reserved'}
+                                                        onChange={(e) => updateBookingStatus(b.id, e.target.value)}
+                                                        className="bg-gray-50 border border-gray-100 rounded-lg px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-gray-700 outline-none focus:border-primary transition-colors cursor-pointer"
+                                                    >
+                                                        <option value="pending">Pending</option>
+                                                        <option value="reserved">Reserved</option>
+                                                        <option value="booked">Booked</option>
+                                                        <option value="cancelled">Cancelled</option>
+                                                    </select>
                                                     <Button 
                                                         variant="ghost" 
                                                         className="h-10 rounded-xl text-gray-400 hover:text-red-500 transition-colors"
