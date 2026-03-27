@@ -16,6 +16,8 @@ export type DayItinerary = {
     activities: string[];
     sightseeing?: string[];
     photos: string[];
+    meals?: string;
+    stay?: string;
 };
 
 export type CustomSection = {
@@ -61,6 +63,11 @@ export type Quotation = {
     customSections?: CustomSection[];
     includes: string[];
     exclusions: string[];
+    optionalActivities?: {
+        name: string;
+        price: number;
+        description: string;
+    }[];
 
     // Expert
     expert: {

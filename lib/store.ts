@@ -39,7 +39,13 @@ export const deleteQuotation = async (id: string) => {
     await db.delete(id);
 };
 
+import { PREDEFINED_QUOTES } from "./itineraries";
+
 export const getQuotationBySlug = async (slug: string): Promise<Quotation | undefined> => {
+    // Check predefined first
+    if (PREDEFINED_QUOTES[slug]) {
+        return PREDEFINED_QUOTES[slug];
+    }
     const all = await getQuotations();
     return all.find((q) => q.slug === slug);
 };
