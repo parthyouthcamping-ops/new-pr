@@ -43,15 +43,29 @@ export default function AdminDashboard() {
 
     const updateQuotationStatus = async (id: string, newStatus: string) => {
         try {
-            await fetch(`/api/quotation/${id}/status`, {
+            console.log(`[Frontend] Calling API to update status for ${id} to ${newStatus}`);
+            const res = await fetch(`/api/quotation/${id}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus })
             });
-            toast.success(`Trip status updated to ${newStatus}`);
-            const data = await getQuotations();
-            setQuotations(data);
+            const data = await res.json();
+
+            if (res.ok) {
+                console.log(`[Frontend] Status updated successfully:`, data.quotation);
+                toast.success(`Trip status updated to ${newStatus}`);
+            } else {
+                console.error(`[Frontend] API Error: ${data.error}`);
+                toast.error(data.error || "Failed to update status");
+            }
+
+            // Always refetch to ensure UI is perfectly synced with the Database
+            console.log("[Frontend] Refetching all quotations to sync UI...");
+            const freshData = await getQuotations();
+            setQuotations(freshData);
+
         } catch (err) {
+            console.error(`[Frontend] Network or fetch error:`, err);
             toast.error("Failed to update status");
         }
     };
@@ -76,14 +90,32 @@ export default function AdminDashboard() {
 
     const updateBookingStatus = async (id: string, status: string) => {
         try {
-            await fetch('/api/book', {
+            console.log(`[Frontend] Admin attempting to update Booking ${id} to ${status}`);
+            const res = await fetch('/api/book', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'update_status', id, status })
             });
-            toast.success(`Booking marked as ${status}`);
+            const data = await res.json();
+            
+            if (res.ok) {
+                console.log(`[Frontend] Booking updated successfully:`, data);
+                toast.success(`Booking marked as ${status}`);
+            } else {
+                console.error(`[Frontend] Booking API Error: ${data.error}`);
+                toast.error(data.error || "Failed to update status");
+            }
+            
+            console.log("[Frontend] Refetching all bookings to sync UI...");
             fetchBookings();
+            
+            // Also refresh quotations because a booking status change might sync to the quotation
+            console.log("[Frontend] Refetching quotations to sync cross-model CRM statuses...");
+            const freshData = await getQuotations();
+            setQuotations(freshData);
+
         } catch (err) {
+            console.error(`[Frontend] Network error updating booking:`, err);
             toast.error("Failed to update status");
         }
     };

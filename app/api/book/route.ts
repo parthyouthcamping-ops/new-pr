@@ -41,6 +41,12 @@ export async function POST(request: Request) {
             )
         `;
 
+        try {
+            await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travelers INTEGER;`;
+            await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travel_dates TEXT;`;
+            await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS special_requests TEXT;`;
+        } catch(e) { console.error('Error adding columns', e); }
+
         if (action === 'update_status') {
              const getSlugRes = await sql`SELECT trip_slug FROM bookings WHERE id = ${id}`;
              const activeSlug = tripSlug || (getSlugRes.length > 0 ? getSlugRes[0].trip_slug : null);
@@ -75,8 +81,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true });
         }
 
+        console.log(`[API /book] New Request. Slug: ${tripSlug}, Customer: ${name}, Action: ${action || 'New Booking'}`);
+
         // Prevent duplicate or already booked trips
         if (tripSlug) {
+            console.log(`[API /book] Validating trip slug: ${tripSlug}`);
             const res = await fetch(`${new URL(request.url).origin}/api/db`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -85,25 +94,32 @@ export async function POST(request: Request) {
             if (res.ok) {
                 const qs: any[] = await res.json();
                 const q = qs.find(q => q.slug === tripSlug);
+                console.log(`[API /book] Found Quotation? ${!!q}. Current Status: ${q?.bookingStatus}`);
                 if (q && q.bookingStatus === 'booked') {
+                    console.error(`[API /book] Rejected: Trip ${tripSlug} is already booked.`);
                     return NextResponse.json({ error: "Trip is already booked." }, { status: 400 });
                 }
+            } else {
+                console.error(`[API /book] Failed to fetch quotations for validation.`);
             }
         }
 
         const existing = await sql`SELECT * FROM bookings WHERE trip_slug = ${tripSlug} AND email = ${email}`;
         if (existing.length > 0) {
+            console.error(`[API /book] Rejected: Duplicate booking for ${email} on ${tripSlug}.`);
             return NextResponse.json({ error: "Duplicate booking detected for this trip and email." }, { status: 400 });
         }
 
+        const { travelers, travelDates, specialRequests } = body;
+
         // New Booking
         const result = await sql`
-            INSERT INTO bookings (trip_slug, customer_name, phone, email, status)
-            VALUES (${tripSlug}, ${name}, ${phone}, ${email}, 'booked')
+            INSERT INTO bookings (trip_slug, customer_name, phone, email, status, travelers, travel_dates, special_requests)
+            VALUES (${tripSlug}, ${name}, ${phone}, ${email}, 'pending', ${travelers || null}, ${travelDates || null}, ${specialRequests || null})
             RETURNING *
         `;
 
-        // Update Quotation to booked
+        // Update Quotation to pending
         try {
             const res = await fetch(`${new URL(request.url).origin}/api/db`, {
                 method: 'POST',
@@ -113,8 +129,8 @@ export async function POST(request: Request) {
             if (res.ok) {
                 const qs: any[] = await res.json();
                 const q = qs.find(q => q.slug === tripSlug);
-                if (q && q.bookingStatus !== 'booked') {
-                    q.bookingStatus = 'booked';
+                if (q && q.bookingStatus !== 'booked' && q.bookingStatus !== 'reserved') {
+                    q.bookingStatus = 'pending';
                     q.updatedAt = new Date().toISOString();
                     await fetch(`${new URL(request.url).origin}/api/db`, {
                         method: 'POST',
@@ -123,7 +139,7 @@ export async function POST(request: Request) {
                     });
                 }
             }
-        } catch (e) { console.error('Error updating quotation status to booked'); }
+        } catch (e) { console.error('Error updating quotation status to pending'); }
 
         return NextResponse.json(result[0]);
     } catch (error: any) {

@@ -4,6 +4,9 @@ import { getQuotations } from "@/lib/store";
 import LuxuryQuotationUI from "./LuxuryQuotationUI";
 import { neon } from '@neondatabase/serverless';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     console.log("Next.js Server Debug - Params Slug:", slug);

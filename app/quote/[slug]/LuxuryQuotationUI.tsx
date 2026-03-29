@@ -38,9 +38,18 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
     const [booking, setBooking] = useState<any>(null);
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [bookingForm, setBookingForm] = useState({ name: q.clientName, phone: '', email: '' });
+    const [bookingForm, setBookingForm] = useState({ 
+        name: q.clientName || '', 
+        phone: '', 
+        email: '',
+        travelers: q.pax || 1,
+        travelDates: `${q.travelDates?.from || ''} to ${q.travelDates?.to || ''}`,
+        specialRequests: ''
+    });
 
     const isBooked = q.bookingStatus === 'booked' || booking?.status === 'booked';
+    const isPending = q.bookingStatus === 'pending' || booking?.status === 'pending';
+    const isReserved = q.bookingStatus === 'reserved' || booking?.status === 'reserved';
 
     const { scrollY } = useScroll();
     const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
@@ -75,11 +84,19 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
             if (res.ok && data.id) {
                 setBooking(data);
                 setIsBookingModalOpen(false);
-                toast.success("Your trip has been successfully booked!");
+                toast.success("Your trip has been successfully requested!");
                 
                 // WhatsApp nudge
-                const message = encodeURIComponent(`Hi ${q.expert.name || 'Travel Expert'}, I just booked the ${q.destination} trip for ${bookingForm.name}! Looking forward to connecting.`);
-                window.open(`https://wa.me/${q.expert.whatsapp}?text=${message}`, '_blank');
+                const quoteIdStr = booking?.id || q.slug;
+                const message = encodeURIComponent(`Hi ${q.expert?.name || 'Travel Expert'},\n\nI just requested a booking for the *${q.destination}* trip.\n\n*Name:* ${bookingForm.name}\n*Travelers:* ${bookingForm.travelers}\n*Dates:* ${bookingForm.travelDates}\n*Quote ID:* ${quoteIdStr}\n\nLooking forward to connecting!`);
+                
+                // Use fallback expert number or generic if not present
+                const expertPhone = q.expert?.whatsapp || '';
+                if(expertPhone) {
+                   window.open(`https://wa.me/${expertPhone}?text=${message}`, '_blank');
+                } else {
+                   toast.info("Could not redirect to WhatsApp: No expert number provided.");
+                }
             } else {
                 toast.error(data.error || "Booking failed. Please try again.");
             }
@@ -105,6 +122,18 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                 >
                     <Check size={14} />
                     Reserved
+                </Button>
+            );
+        }
+
+        if (isPending) {
+            return (
+                <Button 
+                    disabled
+                    className={`${className} flex items-center gap-2 bg-yellow-500 hover:bg-yellow-500 cursor-not-allowed`}
+                >
+                    <Loader2 size={14} className="animate-spin" />
+                    Booking Requested
                 </Button>
             );
         }
@@ -137,11 +166,17 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                 }
             `}</style>
 
-            {/* Booked Banner */}
+            {/* Booked / Pending Banner */}
             {isBooked && (
                 <div className="bg-green-500 text-white w-full text-center py-3 px-4 font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-md z-[200] relative">
                     <CheckCircle2 size={16} className="inline mr-2 -mt-1" />
                     This trip is already booked
+                </div>
+            )}
+            {isPending && !isBooked && (
+                <div className="bg-yellow-500 text-white w-full text-center py-3 px-4 font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-md z-[200] relative">
+                    <Loader2 size={16} className="inline mr-2 -mt-1 animate-spin" />
+                    Booking Requested / Pending Inquiry
                 </div>
             )}
 
@@ -157,6 +192,7 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                         <div className={`hidden sm:flex px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white shadow-sm ${
                             q.bookingStatus === 'booked' ? 'bg-green-500' :
                             q.bookingStatus === 'reserved' ? 'bg-blue-500' :
+                            q.bookingStatus === 'pending' ? 'bg-yellow-500' :
                             q.bookingStatus === 'cancelled' ? 'bg-red-500' : 'bg-orange-400'
                         }`}>
                             {q.bookingStatus || 'pending'}
@@ -563,6 +599,37 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                                             onChange={e => setBookingForm({...bookingForm, email: e.target.value})}
                                             className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold focus:border-primary outline-none transition-all"
                                             placeholder="you@email.com"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Number of Travelers</label>
+                                        <input 
+                                            required
+                                            type="number"
+                                            min="1"
+                                            value={bookingForm.travelers}
+                                            onChange={e => setBookingForm({...bookingForm, travelers: parseInt(e.target.value) || 1})}
+                                            className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold focus:border-primary outline-none transition-all"
+                                            placeholder="e.g. 2"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Travel Dates</label>
+                                        <input 
+                                            type="text"
+                                            value={bookingForm.travelDates}
+                                            onChange={e => setBookingForm({...bookingForm, travelDates: e.target.value})}
+                                            className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold focus:border-primary outline-none transition-all"
+                                            placeholder="e.g. Oct 12 to Oct 20"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Special Requests (Optional)</label>
+                                        <textarea 
+                                            value={bookingForm.specialRequests}
+                                            onChange={e => setBookingForm({...bookingForm, specialRequests: e.target.value})}
+                                            className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold focus:border-primary outline-none transition-all min-h-[100px]"
+                                            placeholder="Any dietary requirements or special occasions?"
                                         />
                                     </div>
 
