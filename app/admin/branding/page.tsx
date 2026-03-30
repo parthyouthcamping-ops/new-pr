@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/Input";
@@ -42,11 +42,17 @@ export default function BrandingPage() {
 
     useEffect(() => {
         const load = async () => {
-            const data = await getBrandSettings();
-            if (data) {
-                setSettings(prev => ({ ...prev, ...data }));
+            try {
+                const data = await getBrandSettings();
+                if (data) {
+                    setSettings(prev => ({ ...prev, ...data }));
+                }
+            } catch (err) {
+                console.error("Failed to load brand settings:", err);
+                toast.error("Could not fetch brand data.");
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
         load();
     }, []);
@@ -70,7 +76,7 @@ export default function BrandingPage() {
             if (!res.ok) throw new Error("Upload failed");
             
             const data = await res.json();
-            setSettings({ ...settings, companyLogo: data.secure_url });
+            setSettings(prev => ({ ...prev, companyLogo: data.secure_url }));
             toast.success("Logo updated successfully!");
         } catch (err) {
             console.error(err);
@@ -82,6 +88,7 @@ export default function BrandingPage() {
     };
 
     const handleSave = async () => {
+        if (isSaving) return;
         setIsSaving(true);
         try {
             await saveBrandSettings({
@@ -90,20 +97,24 @@ export default function BrandingPage() {
             });
             toast.success("Branding settings saved globally!");
         } catch (err) {
+            console.error("Save failed:", err);
             toast.error("Failed to save branding settings.");
         } finally {
             setIsSaving(false);
         }
     };
 
-    if (loading) return (
-        <div className="flex items-center justify-center min-h-[400px]">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        </div>
-    );
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Loading Brand Engine...</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="max-w-5xl space-y-12 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="max-w-5xl space-y-12 pb-20">
             <div className="flex flex-col gap-2">
                 <h2 className="text-4xl font-black text-gray-900 tracking-tight">Global Branding</h2>
                 <p className="text-gray-500 font-medium">Configure your company identity. These changes reflect across all luxury proposals instantly.</p>
@@ -138,7 +149,6 @@ export default function BrandingPage() {
                             )}
                             <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
                             
-                            {/* Hover Overlay */}
                             {settings.companyLogo && !isUploading && (
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
                                     <span className="text-white text-[10px] font-black uppercase tracking-widest">Change Logo</span>
@@ -156,7 +166,8 @@ export default function BrandingPage() {
                             ].map((mode) => (
                                 <button
                                     key={mode.id}
-                                    onClick={() => setSettings({ ...settings, logoMode: mode.id as any })}
+                                    type="button"
+                                    onClick={() => setSettings(prev => ({ ...prev, logoMode: mode.id as any }))}
                                     className={`flex flex-col text-left p-4 rounded-2xl border-2 transition-all ${
                                         settings.logoMode === mode.id 
                                         ? 'border-primary bg-primary/[0.03] shadow-lg shadow-primary/5' 
@@ -188,8 +199,8 @@ export default function BrandingPage() {
                                         <Input
                                             className="pl-12 h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white transition-all font-bold"
                                             placeholder="YouthCamping"
-                                            value={settings.companyName}
-                                            onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
+                                            value={settings.companyName || ''}
+                                            onChange={(e) => setSettings(prev => ({ ...prev, companyName: e.target.value }))}
                                         />
                                     </div>
                                 </div>
@@ -200,10 +211,10 @@ export default function BrandingPage() {
                                         <Input
                                             className="pl-12 h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white transition-all font-mono"
                                             placeholder="#FF4D00"
-                                            value={settings.brandColor}
-                                            onChange={(e) => setSettings({ ...settings, brandColor: e.target.value })}
+                                            value={settings.brandColor || ''}
+                                            onChange={(e) => setSettings(prev => ({ ...prev, brandColor: e.target.value }))}
                                         />
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full shadow-inner border border-gray-100" style={{ backgroundColor: settings.brandColor }} />
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full shadow-inner border border-gray-100" style={{ backgroundColor: settings.brandColor || '#FF4D00' }} />
                                     </div>
                                 </div>
                             </div>
@@ -224,8 +235,8 @@ export default function BrandingPage() {
                                             <Input
                                                 className="pl-12 h-14 rounded-2xl border-gray-100 font-medium"
                                                 placeholder="https://instagram.com/youthcamping"
-                                                value={settings.instagramLink}
-                                                onChange={(e) => setSettings({ ...settings, instagramLink: e.target.value })}
+                                                value={settings.instagramLink || ''}
+                                                onChange={(e) => setSettings(prev => ({ ...prev, instagramLink: e.target.value }))}
                                             />
                                         </div>
                                     </div>
@@ -236,8 +247,8 @@ export default function BrandingPage() {
                                             <Input
                                                 className="pl-12 h-14 rounded-2xl border-gray-100 font-medium"
                                                 placeholder="https://youthcamping.in"
-                                                value={settings.websiteLink}
-                                                onChange={(e) => setSettings({ ...settings, websiteLink: e.target.value })}
+                                                value={settings.websiteLink || ''}
+                                                onChange={(e) => setSettings(prev => ({ ...prev, websiteLink: e.target.value }))}
                                             />
                                         </div>
                                     </div>
@@ -251,8 +262,8 @@ export default function BrandingPage() {
                                             <Input
                                                 className="pl-12 h-14 rounded-2xl border-gray-100 font-medium"
                                                 placeholder="+91 98765 43210"
-                                                value={settings.phoneNumber}
-                                                onChange={(e) => setSettings({ ...settings, phoneNumber: e.target.value })}
+                                                value={settings.phoneNumber || ''}
+                                                onChange={(e) => setSettings(prev => ({ ...prev, phoneNumber: e.target.value }))}
                                             />
                                         </div>
                                     </div>
@@ -263,8 +274,8 @@ export default function BrandingPage() {
                                             <Input
                                                 className="pl-12 h-14 rounded-2xl border-gray-100 font-medium"
                                                 placeholder="© 2024 YouthCamping"
-                                                value={settings.footerText}
-                                                onChange={(e) => setSettings({ ...settings, footerText: e.target.value })}
+                                                value={settings.footerText || ''}
+                                                onChange={(e) => setSettings(prev => ({ ...prev, footerText: e.target.value }))}
                                             />
                                         </div>
                                     </div>
@@ -286,9 +297,9 @@ export default function BrandingPage() {
                                 className="w-full md:w-auto rounded-2xl px-12 py-7 shadow-2xl shadow-primary/30 transition-all font-black uppercase tracking-widest text-xs"
                             >
                                 {isSaving ? (
-                                    <><Loader2 className="mr-2 animate-spin" size={18} /> Saving...</>
+                                    <React.Fragment><Loader2 className="mr-2 animate-spin" size={18} /> Saving...</React.Fragment>
                                 ) : (
-                                    <><Save size={18} className="mr-2" /> Update Brand Engine</>
+                                    <React.Fragment><Save size={18} className="mr-2" /> Update Brand Engine</React.Fragment>
                                 )}
                             </Button>
                         </div>
