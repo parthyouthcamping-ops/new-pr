@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { neon } from '@neondatabase/serverless';
-import LuxuryQuotationUI from "../../quote/[slug]/LuxuryQuotationUI";
+import LuxuryQuotationUI from "@/app/quote/[slug]/LuxuryQuotationUI";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -24,7 +24,6 @@ export default async function QuotationPage({
     let data = null;
 
     try {
-        // Fetch using the new schema
         const result = await sql`
             SELECT id, slug, trip_name, price, itinerary, created_at
             FROM quotations
@@ -34,11 +33,6 @@ export default async function QuotationPage({
 
         if (result.length > 0) {
             const record = result[0];
-            // The user requested to store trip_name and price separately,
-            // but for the UI to work with the existing LuxuryQuotationUI,
-            // we'll merge them or ensure the 'itinerary' JSON holds the full object.
-            
-            // Reconstruct the Quotation object
             data = {
                 ...record.itinerary,
                 id: record.id,
@@ -56,6 +50,5 @@ export default async function QuotationPage({
         return notFound();
     }
 
-    // Reuse the premium UI
     return <LuxuryQuotationUI q={data as any} />;
 }

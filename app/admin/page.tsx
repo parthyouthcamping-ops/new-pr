@@ -264,153 +264,150 @@ ${expertDesignation}`;
 
             {activeTab === "proposals" ? (
                 quotations.length === 0 ? (
-                <GlassCard className="flex flex-col items-center justify-center p-20 text-center gap-6">
-                    <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center text-primary">
-                        <Clock size={48} />
-                    </div>
-                    <div>
-                        <h3 className="text-2xl font-bold text-gray-900">No Proposals Yet</h3>
-                        <p className="text-gray-500 font-medium mt-2">Start by creating your first luxury travel proposal.</p>
-                    </div>
-                </GlassCard>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {quotations.filter(q => statusFilter === 'all' || (q.bookingStatus || 'pending') === statusFilter).map((q, idx) => (
-                        <motion.div
-                            key={q.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.05 }}
-                        >
-                            <GlassCard className="group relative overflow-hidden h-full flex flex-col p-8 rounded-[2.5rem] border-2 border-white/40 hover:border-primary/20 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
-                                {/* Status Badges */}
-                                <div className="absolute top-8 right-8 z-10 flex flex-col items-end gap-2">
-                                    {q.bookingStatus === 'booked' && (
-                                        <span className="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm bg-green-500 text-white">
-                                            <CheckCircle2 size={12} /> Booked
+                    <GlassCard className="flex flex-col items-center justify-center p-20 text-center gap-6">
+                        <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center text-primary">
+                            <Clock size={48} />
+                        </div>
+                        <div>
+                            <h3 className="text-2xl font-bold text-gray-900">No Proposals Yet</h3>
+                            <p className="text-gray-500 font-medium mt-2">Start by creating your first luxury travel proposal.</p>
+                        </div>
+                    </GlassCard>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {quotations.filter(q => statusFilter === 'all' || (q.bookingStatus || 'pending') === statusFilter).map((q, idx) => (
+                            <motion.div
+                                key={q.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: idx * 0.05 }}
+                            >
+                                <GlassCard className="group relative overflow-hidden h-full flex flex-col p-8 rounded-[2.5rem] border-2 border-white/40 hover:border-primary/20 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
+                                    {/* Status Badges */}
+                                    <div className="absolute top-8 right-8 z-10 flex flex-col items-end gap-2">
+                                        {q.bookingStatus === 'booked' && (
+                                            <span className="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm bg-green-500 text-white">
+                                                <CheckCircle2 size={12} /> Booked
+                                            </span>
+                                        )}
+                                        <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm ${q.status === 'Published' ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                                            {q.status}
                                         </span>
-                                    )}
-                                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm ${q.status === 'Published' ? 'bg-gray-800 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                                        {q.status}
-                                    </span>
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex flex-col gap-8 pt-4 h-full">
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.2em]">
-                                            <MapPin size={12} />
-                                            {q.destination}
-                                        </div>
-                                        <h3 className="text-2xl font-black text-gray-900 leading-tight line-clamp-2">
-                                            {q.clientName}
-                                        </h3>
-                                        <div className="flex items-center gap-3 text-gray-400 font-bold text-[10px] uppercase tracking-widest">
-                                            <Clock size={12} />
-                                            {q.duration}
-                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4 py-6 border-y border-gray-50">
-                                        <div className="space-y-1">
-                                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Guests</p>
-                                            <div className="flex items-center gap-2 text-xs font-bold text-gray-700">
-                                                <Users size={14} className="text-primary" />
-                                                {q.pax} Person(s)
+                                    {/* Content */}
+                                    <div className="flex flex-col gap-8 pt-4 h-full">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.2em]">
+                                                <MapPin size={12} />
+                                                {q.destination}
+                                            </div>
+                                            <h3 className="text-2xl font-black text-gray-900 leading-tight line-clamp-2">
+                                                {q.clientName}
+                                            </h3>
+                                            <div className="flex items-center gap-3 text-gray-400 font-bold text-[10px] uppercase tracking-widest">
+                                                <Clock size={12} />
+                                                {q.duration}
                                             </div>
                                         </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Travel Date</p>
-                                            <div className="flex items-center gap-2 text-xs font-bold text-gray-700">
-                                                <Calendar size={14} className="text-primary" />
-                                                {q.travelDates?.from ? new Date(q.travelDates.from).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : "TBD"}
+
+                                        <div className="grid grid-cols-2 gap-4 py-6 border-y border-gray-50">
+                                            <div className="space-y-1">
+                                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Guests</p>
+                                                <div className="flex items-center gap-2 text-xs font-bold text-gray-700">
+                                                    <Users size={14} className="text-primary" />
+                                                    {q.pax} Person(s)
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Travel Date</p>
+                                                <div className="flex items-center gap-2 text-xs font-bold text-gray-700">
+                                                    <Calendar size={14} className="text-primary" />
+                                                    {q.travelDates?.from ? new Date(q.travelDates.from).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : "TBD"}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-3 mt-auto">
+                                            <div className="flex gap-2">
+                                                <Link href={`/quote/${q.slug}`} className="flex-1">
+                                                    <Button variant="outline" className="w-full text-[10px] font-black uppercase tracking-widest h-11 rounded-lg border-gray-100 hover:border-primary hover:bg-white border-2">
+                                                        <Eye size={16} className="mr-2" /> View
+                                                    </Button>
+                                                </Link>
+                                                <Link href={`/admin/edit/${q.id}`} className="flex-1">
+                                                    <Button className="w-full text-[10px] font-black uppercase tracking-widest h-11 rounded-lg shadow-lg shadow-primary/20">
+                                                        <Edit size={16} className="mr-2" /> Edit
+                                                    </Button>
+                                                </Link>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 bg-gray-50/80 p-1.5 rounded-xl border border-gray-100">
+                                                <div className={`w-2 h-2 rounded-full shrink-0 ml-2 ${
+                                                    q.bookingStatus === 'booked' ? 'bg-green-500' :
+                                                    q.bookingStatus === 'reserved' ? 'bg-blue-500' :
+                                                    q.bookingStatus === 'cancelled' ? 'bg-red-500' : 'bg-orange-400'
+                                                }`} />
+                                                <select
+                                                    value={q.bookingStatus || 'pending'}
+                                                    onChange={(e) => updateQuotationStatus(q.id, e.target.value)}
+                                                    className="w-full bg-transparent text-[10px] font-black uppercase tracking-widest text-gray-700 outline-none cursor-pointer py-1"
+                                                >
+                                                    <option value="pending">Pending Status</option>
+                                                    <option value="reserved">Reserved</option>
+                                                    <option value="booked">Booked Confirmed</option>
+                                                    <option value="cancelled">Cancelled</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="grid grid-cols-4 gap-2 items-center bg-gray-50/50 p-2 rounded-2xl">
+                                                <Button
+                                                    variant="ghost"
+                                                    className={`h-11 rounded-xl text-gray-500 hover:text-primary transition-all flex items-center justify-center gap-1.5 px-0 ${copiedId === q.id ? 'bg-green-50 text-green-600' : 'hover:bg-white shadow-sm hover:shadow'}`}
+                                                    onClick={() => handleCopyLink(q.slug, q.id)}
+                                                    title="Copy Link"
+                                                >
+                                                    {copiedId === q.id ? <Check size={14} /> : <LinkIcon size={14} />}
+                                                    <span className="text-[8px] font-black uppercase tracking-widest hidden sm:inline">Link</span>
+                                                </Button>
+
+                                                <Button
+                                                    variant="ghost"
+                                                    className="h-11 rounded-xl text-gray-500 hover:text-green-600 hover:bg-white shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 px-0"
+                                                    onClick={() => handleWhatsAppShare(q)}
+                                                    title="Share to WhatsApp"
+                                                >
+                                                    <WhatsAppIcon size={14} />
+                                                    <span className="text-[8px] font-black uppercase tracking-widest hidden sm:inline">WA</span>
+                                                </Button>
+
+                                                <Button
+                                                    variant="ghost"
+                                                    className="h-11 rounded-xl text-gray-500 hover:text-blue-500 hover:bg-white shadow-sm hover:shadow transition-all flex items-center justify-center px-0"
+                                                    onClick={() => handleDuplicate(q)}
+                                                    title="Duplicate Proposal"
+                                                >
+                                                    <DuplicateIcon size={16} />
+                                                </Button>
+
+                                                <Button
+                                                    variant="ghost"
+                                                    className="h-11 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center px-0"
+                                                    onClick={(e) => handleDeleteClick(e, q.id)}
+                                                    title="Delete Proposal"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div className="flex flex-col gap-3 mt-auto">
-                                        {/* Main Row */}
-                                        <div className="flex gap-2">
-                                            <Link href={`/quote/${q.slug}`} className="flex-1">
-                                                <Button variant="outline" className="w-full text-[10px] font-black uppercase tracking-widest h-11 rounded-lg border-gray-100 hover:border-primary hover:bg-white border-2">
-                                                    <Eye size={16} className="mr-2" /> View
-                                                </Button>
-                                            </Link>
-                                            <Link href={`/admin/edit/${q.id}`} className="flex-1">
-                                                <Button className="w-full text-[10px] font-black uppercase tracking-widest h-11 rounded-lg shadow-lg shadow-primary/20">
-                                                    <Edit size={16} className="mr-2" /> Edit
-                                                </Button>
-                                            </Link>
-                                        </div>
-
-                                        {/* CRM Status Control */}
-                                        <div className="flex items-center gap-2 bg-gray-50/80 p-1.5 rounded-xl border border-gray-100">
-                                            <div className={`w-2 h-2 rounded-full shrink-0 ml-2 ${
-                                                q.bookingStatus === 'booked' ? 'bg-green-500' :
-                                                q.bookingStatus === 'reserved' ? 'bg-blue-500' :
-                                                q.bookingStatus === 'cancelled' ? 'bg-red-500' : 'bg-orange-400'
-                                            }`} />
-                                            <select
-                                                value={q.bookingStatus || 'pending'}
-                                                onChange={(e) => updateQuotationStatus(q.id, e.target.value)}
-                                                className="w-full bg-transparent text-[10px] font-black uppercase tracking-widest text-gray-700 outline-none cursor-pointer py-1"
-                                            >
-                                                <option value="pending">Pending Status</option>
-                                                <option value="reserved">Reserved</option>
-                                                <option value="booked">Booked Confirmed</option>
-                                                <option value="cancelled">Cancelled</option>
-                                            </select>
-                                        </div>
-
-                                        {/* Action Icons Row */}
-                                        <div className="grid grid-cols-4 gap-2 items-center bg-gray-50/50 p-2 rounded-2xl">
-                                            <Button
-                                                variant="ghost"
-                                                className={`h-11 rounded-xl text-gray-500 hover:text-primary transition-all flex items-center justify-center gap-1.5 px-0 ${copiedId === q.id ? 'bg-green-50 text-green-600' : 'hover:bg-white shadow-sm hover:shadow'}`}
-                                                onClick={() => handleCopyLink(q.slug, q.id)}
-                                                title="Copy Link"
-                                            >
-                                                {copiedId === q.id ? <Check size={14} /> : <LinkIcon size={14} />}
-                                                <span className="text-[8px] font-black uppercase tracking-widest hidden sm:inline">Link</span>
-                                            </Button>
-
-                                            <Button
-                                                variant="ghost"
-                                                className="h-11 rounded-xl text-gray-500 hover:text-green-600 hover:bg-white shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5 px-0"
-                                                onClick={() => handleWhatsAppShare(q)}
-                                                title="Share to WhatsApp"
-                                            >
-                                                <WhatsAppIcon size={14} />
-                                                <span className="text-[8px] font-black uppercase tracking-widest hidden sm:inline">WA</span>
-                                            </Button>
-
-                                            <Button
-                                                variant="ghost"
-                                                className="h-11 rounded-xl text-gray-500 hover:text-blue-500 hover:bg-white shadow-sm hover:shadow transition-all flex items-center justify-center px-0"
-                                                onClick={() => handleDuplicate(q)}
-                                                title="Duplicate Proposal"
-                                            >
-                                                <DuplicateIcon size={16} />
-                                            </Button>
-
-                                            <Button
-                                                variant="ghost"
-                                                className="h-11 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center px-0"
-                                                onClick={(e) => handleDeleteClick(e, q.id)}
-                                                title="Delete Proposal"
-                                            >
-                                                <Trash2 size={16} />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </GlassCard>
-                        </motion.div>
-                    ))}
-                </div>
-            )
-        ) : (
-            <div className="flex flex-col gap-8">
+                                </GlassCard>
+                            </motion.div>
+                        ))}
+                    </div>
+                )
+            ) : (
+                <div className="flex flex-col gap-8">
                     {bookings.length === 0 ? (
                         <GlassCard className="flex flex-col items-center justify-center p-20 text-center gap-6">
                             <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center text-primary">
