@@ -270,7 +270,7 @@ export default function AIGeneratorPage() {
                         </div>
                         <div>
                             <h1 className="text-2xl font-black text-gray-900 tracking-tight">AI Itinerary Generator</h1>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Powered by Gemini 2.5 Flash</p>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Powered by Gemini 1.5 Flash</p>
 
                         </div>
                     </div>

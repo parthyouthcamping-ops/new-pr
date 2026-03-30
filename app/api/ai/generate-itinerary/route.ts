@@ -105,12 +105,8 @@ export async function POST(request: Request) {
         // This specific user has access to Gemini 2.0/2.5/3.1
         // Prefixed names are confirmed to be the standard IDs for this key
         const modelsToTry = [
-            'models/gemini-2.5-flash',
-            'models/gemini-2.0-flash',
-            'models/gemini-1.5-flash',
-            'gemini-2.5-flash',
-            'gemini-2.0-flash',
-            'gemini-1.5-flash'
+            'gemini-1.5-flash',
+            'gemini-1.5-pro'
         ];
 
         
