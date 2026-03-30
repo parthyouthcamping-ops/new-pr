@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { neon } from '@neondatabase/serverless';
-import LuxuryQuotationUI from "@/app/quote/[slug]/LuxuryQuotationUI";
+import LuxuryQuotationUI from "@/components/LuxuryQuotationUI";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

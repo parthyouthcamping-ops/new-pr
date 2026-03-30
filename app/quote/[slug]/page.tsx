@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { PREDEFINED_QUOTES } from "@/lib/itineraries";
 import { getQuotations } from "@/lib/store";
-import LuxuryQuotationUI from "./LuxuryQuotationUI";
+import LuxuryQuotationUI from "@/components/LuxuryQuotationUI";
 import { neon } from '@neondatabase/serverless';
 
 export const dynamic = 'force-dynamic';
