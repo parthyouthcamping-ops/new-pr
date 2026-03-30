@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { PREDEFINED_QUOTES } from "@/lib/itineraries";
-import { supabase } from '@/lib/supabase';
 import LuxuryQuotationUI from "@/components/LuxuryQuotationUI";
+import { getQuotationBySlugSmart } from "@/lib/quotations-smart";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -16,32 +16,9 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     // Optional: Fallback to DB if not in predefined (to be robust)
     if (!data) {
         try {
-            const { data: record, error } = await supabase
-                .from('quotations')
-                .select('*')
-                .eq('slug', slug)
-                .single();
-                
-            if (error) {
-                console.error(`[quote/${slug}] Supabase Error:`, error.message);
-            }
-
-            if (record) {
-                const itineraryData = typeof record.itinerary === 'string' 
-                    ? JSON.parse(record.itinerary) 
-                    : record.itinerary;
-
-                data = {
-                    ...itineraryData,
-                    id: record.id,
-                    slug: record.slug,
-                    trip_name: record.trip_name,
-                    price: record.price,
-                    createdAt: record.created_at
-                } as any;
-            }
+            data = await getQuotationBySlugSmart(slug);
         } catch (e: any) {
-            console.error("Failed to fetch quotation from db:", e.message);
+            console.error(`[quote/${slug}] DB error:`, e.message);
         }
     }
 

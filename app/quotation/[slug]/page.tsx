@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { supabase } from '@/lib/supabase';
 import LuxuryQuotationUI from "@/components/LuxuryQuotationUI";
+import { getQuotationBySlugSmart } from "@/lib/quotations-smart";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -11,38 +11,13 @@ export default async function QuotationPage({
     params: Promise<{ slug: string }> 
 }) {
     const { slug } = await params;
-    console.log(`[quotation/${slug}] Fetching from Supabase...`);
+    console.log(`[quotation/${slug}] Fetching from DB...`);
 
-    let data = null;
-
+    let data: any = null;
     try {
-        const { data: record, error } = await supabase
-            .from('quotations')
-            .select('*')
-            .eq('slug', slug)
-            .single();
-
-        if (error) {
-            console.error(`[quotation/${slug}] Supabase Error:`, error.message);
-        }
-
-        if (record) {
-            // Unpack itinerary JSON if it's a string, or use directly if it's an object
-            const itineraryData = typeof record.itinerary === 'string' 
-                ? JSON.parse(record.itinerary) 
-                : record.itinerary;
-                
-            data = {
-                ...itineraryData,
-                id: record.id,
-                slug: record.slug,
-                trip_name: record.trip_name,
-                price: record.price,
-                createdAt: record.created_at
-            };
-        }
+        data = await getQuotationBySlugSmart(slug);
     } catch (error: any) {
-        console.error(`[quotation/${slug}] Exception:`, error.message);
+        console.error(`[quotation/${slug}] DB Exception:`, error.message);
     }
 
     if (!data) {
