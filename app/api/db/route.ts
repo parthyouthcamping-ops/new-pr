@@ -95,16 +95,41 @@ export async function POST(request: Request) {
                 if (error) throw error;
                 return NextResponse.json(record?.data || null);
             } else {
-                const { data: record, error } = await supabase.from('quotations').select('itinerary').eq('id', id).maybeSingle();
+                const { data: record, error } = await supabase
+                    .from('quotations')
+                    .select('id, slug, itinerary, created_at')
+                    .eq('id', id)
+                    .maybeSingle();
                 if (error) throw error;
-                return NextResponse.json(record?.itinerary || null);
+                if (!record) return NextResponse.json(null);
+
+                const itinerary = record.itinerary || {};
+                return NextResponse.json({
+                    ...itinerary,
+                    id: itinerary?.id || record.id,
+                    slug: itinerary?.slug || record.slug,
+                    createdAt: itinerary?.createdAt || record.created_at
+                });
             }
         }
 
         if (action === 'getAll') {
-            const { data: records, error } = await supabase.from('quotations').select('itinerary').order('created_at', { ascending: false });
+            const { data: records, error } = await supabase
+                .from('quotations')
+                .select('id, slug, itinerary, created_at')
+                .order('created_at', { ascending: false });
             if (error) throw error;
-            return NextResponse.json(records?.map((r: any) => r.itinerary) || []);
+            return NextResponse.json(
+                (records || []).map((r: any) => {
+                    const itinerary = r.itinerary || {};
+                    return {
+                        ...itinerary,
+                        id: itinerary?.id || r.id,
+                        slug: itinerary?.slug || r.slug,
+                        createdAt: itinerary?.createdAt || r.created_at
+                    };
+                })
+            );
         }
 
         if (action === 'delete') {

@@ -8,9 +8,9 @@ export function proxy(request: NextRequest) {
   if (pathname.startsWith('/admin')) {
     const adminToken = request.cookies.get('admin_token')?.value;
 
-    // Simple auth check: if token is not 'authenticated', redirect to home
+    // Simple auth check: if token is not 'authenticated', redirect to login
     if (adminToken !== 'authenticated') {
-      return NextResponse.redirect(new URL('/', request.url));
+      return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 

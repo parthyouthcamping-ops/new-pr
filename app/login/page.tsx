@@ -21,7 +21,9 @@ export default function LoginPage() {
         // Since it's a "mock" auth check as per the user's request
         if (password === "admin123") {
             // Set cookie: admin_token=authenticated
-            document.cookie = "admin_token=authenticated; path=/; max-age=86400"; // 24 hours
+            const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+            document.cookie =
+                `admin_token=authenticated; path=/; max-age=86400; samesite=lax${isHttps ? '; secure' : ''}`;
             toast.success("Login successful!");
             router.push("/admin");
         } else {
