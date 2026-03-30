@@ -361,9 +361,23 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                 }}>
                 <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
                     <div className="flex items-center gap-4">
-                        <a href="https://www.youthcamping.in/" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                        <a
+                            href={brand && brand.websiteLink ? brand.websiteLink : "https://www.youthcamping.in/"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:opacity-80 transition-opacity"
+                            style={{ cursor: 'pointer' }}
+                        >
                             {brand && brand.companyLogo ? (
-                                <img src={brand.companyLogo} className="h-8 md:h-12 w-auto object-contain" alt="Logo" />
+                                <img 
+                                    src={brand.companyLogo} 
+                                    className={`h-10 md:h-14 w-auto drop-shadow-sm transition-all duration-700 ${
+                                        brand.logoMode === 'fill' ? 'object-fill' :
+                                        brand.logoMode === 'cover' ? 'object-cover' :
+                                        'object-contain'
+                                    }`} 
+                                    alt={brand.companyName || "Logo"} 
+                                />
                             ) : (
                                 <img src="/images/logo-horizontal.png" className="h-[40px] md:h-[60px] w-auto object-contain" alt="YouthCamping Logo" />
                             )}
@@ -1104,22 +1118,48 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
             {/* Simplified Footer */}
             <footer className="py-20 border-t text-center space-y-8" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
                 <div className="flex flex-col items-center gap-6">
-                    <a href="https://www.youthcamping.in/" target="_blank" rel="noopener noreferrer" className="block">
-                        <img 
-                            src="/images/logo-vertical.png" 
-                            alt="YouthCamping" 
-                            className="h-24 md:h-32 w-auto object-contain grayscale hover:grayscale-0 transition-all duration-700 opacity-80 hover:opacity-100"
-                        />
+                    <a href={brand?.websiteLink || "https://www.youthcamping.in/"} target="_blank" rel="noopener noreferrer" className="block">
+                        {brand?.companyLogo ? (
+                            <img 
+                                src={brand.companyLogo} 
+                                alt={brand.companyName || "Company Logo"} 
+                                className={`h-20 md:h-28 w-auto transition-all duration-700 grayscale hover:grayscale-0 opacity-80 hover:opacity-100 ${
+                                    brand.logoMode === 'fill' ? 'object-fill' :
+                                    brand.logoMode === 'cover' ? 'object-cover' :
+                                    'object-contain'
+                                }`}
+                            />
+                        ) : (
+                            <img 
+                                src="/images/logo-vertical.png" 
+                                alt="YouthCamping" 
+                                className="h-24 md:h-32 w-auto object-contain grayscale hover:grayscale-0 transition-all duration-700 opacity-80 hover:opacity-100"
+                            />
+                        )}
                     </a>
-                    <p className="text-[10px] font-black uppercase tracking-[0.6em] text-[#6B7280]">Luxury Travel Reimagined</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.6em] text-[#6B7280]">{brand?.companyName || "YouthCamping"} — Luxury Travel Reimagined</p>
                 </div>
+                
                 <div className="flex justify-center gap-10 no-print">
-                   <Instagram size={20} className="text-[#6B7280] hover:text-primary transition-colors cursor-pointer" />
-                   <Globe size={20} className="text-[#6B7280] hover:text-primary transition-colors cursor-pointer" />
-                   <Smartphone size={20} className="text-[#6B7280] hover:text-primary transition-colors cursor-pointer" />
+                   {brand?.instagramLink && (
+                       <a href={brand.instagramLink} target="_blank" rel="noopener noreferrer">
+                           <Instagram size={20} className="text-[#6B7280] hover:text-primary transition-colors cursor-pointer" />
+                       </a>
+                   )}
+                   {brand?.websiteLink && (
+                       <a href={brand.websiteLink} target="_blank" rel="noopener noreferrer">
+                           <Globe size={20} className="text-[#6B7280] hover:text-primary transition-colors cursor-pointer" />
+                       </a>
+                   )}
+                   {brand?.phoneNumber && (
+                       <a href={`tel:${brand.phoneNumber}`}>
+                           <Smartphone size={20} className="text-[#6B7280] hover:text-primary transition-colors cursor-pointer" />
+                       </a>
+                   )}
                 </div>
-                <p className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest pt-10">
-                    &copy; {new Date().getFullYear()} YouthCamping Global Luxury Travel. All Rights Reserved.
+                
+                <p className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest pt-10 px-4">
+                    {brand?.footerText || `© ${new Date().getFullYear()} ${brand?.companyName || "YouthCamping"} Global Luxury Travel. All Rights Reserved.`}
                 </p>
             </footer>
 

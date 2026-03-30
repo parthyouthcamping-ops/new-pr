@@ -7,10 +7,11 @@ import { Plus, LayoutDashboard, FileText, Palette, Hotel, Calendar, UserCheck, W
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+import { usePathname } from "next/navigation";
 import { useBrandSettings } from "@/hooks/useBrandSettings";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const [activeTab, setActiveTab] = useState("all");
+    const pathname = usePathname();
     const { brand } = useBrandSettings();
 
     const sidebarLinks = [
@@ -47,11 +48,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             href={link.href}
                             className={cn(
                                 "flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all transform hover:translate-x-1",
-                                activeTab === link.id
+                                pathname === link.href
                                     ? "bg-primary text-white shadow-xl shadow-primary/20"
                                     : "text-gray-500 hover:bg-primary/5 hover:text-primary"
                             )}
-                            onClick={() => setActiveTab(link.id)}
                         >
                             <link.icon size={20} />
                             {link.name}
@@ -71,11 +71,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             href={link.href}
                             className={cn(
                                 "flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all transform hover:translate-x-1",
-                                activeTab === link.id
+                                pathname === link.href
                                     ? "bg-gradient-to-r from-amber-500 to-primary text-white shadow-xl shadow-amber-400/20"
                                     : "text-amber-600 hover:bg-amber-50"
                             )}
-                            onClick={() => setActiveTab(link.id)}
                         >
                             <link.icon size={20} />
                             {link.name}

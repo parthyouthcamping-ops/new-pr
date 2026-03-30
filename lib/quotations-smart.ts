@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -14,40 +15,43 @@ function parseMaybeJson(v: any): any {
         try {
             return JSON.parse(v);
         } catch {
-            return v;
+            return {};
         }
     }
-    return v;
+    return v || {};
 }
 
-async function getQuotationBySlugSupabase(slug: string): Promise<any | null> {
+function mergeQuotationRecord(record: any): any {
+    if (!record) return null;
+    const itineraryData = parseMaybeJson(record.itinerary);
+    // DB columns always overwrite JSON fields
+    return {
+        ...itineraryData,
+        ...record,
+        createdAt: record.created_at,
+        updatedAt: record.updated_at,
+    };
+}
+
+
+export async function getQuotationBySlugSupabase(slug: string): Promise<any | null> {
     const { data: record, error } = await supabase
         .from('quotations')
-        .select('id, slug, trip_name, price, itinerary, created_at')
+        .select('*')
         .eq('slug', slug)
         .single();
 
     if (error || !record) return null;
-
-    const itineraryData = parseMaybeJson(record.itinerary);
-    if (!itineraryData) return null;
-
-    return {
-        ...itineraryData,
-        id: record.id,
-        slug: record.slug,
-        trip_name: record.trip_name,
-        price: record.price,
-        createdAt: record.created_at,
-    };
+    return mergeQuotationRecord(record);
 }
 
-async function getQuotationApiByIdOrSlugSupabase(idOrSlug: string): Promise<any | null> {
+
+export async function getQuotationApiByIdOrSlugSupabase(idOrSlug: string): Promise<any | null> {
     const isUUID = UUID_REGEX.test(idOrSlug);
 
     const query = supabase
         .from('quotations')
-        .select('id, slug, itinerary, created_at')
+        .select('*')
         .limit(1);
 
     const { data: result, error } = isUUID
@@ -55,17 +59,7 @@ async function getQuotationApiByIdOrSlugSupabase(idOrSlug: string): Promise<any 
         : await query.eq('slug', idOrSlug);
 
     if (error || !result || result.length === 0) return null;
-
-    const quoteData = result[0];
-    const itineraryData = parseMaybeJson(quoteData.itinerary);
-    if (!itineraryData) return null;
-
-    return {
-        ...itineraryData,
-        id: quoteData.id,
-        slug: quoteData.slug,
-        createdAt: quoteData.created_at,
-    };
+    return mergeQuotationRecord(result[0]);
 }
 
 async function updateQuotationStatusByIdSupabase(id: string, status: string) {
