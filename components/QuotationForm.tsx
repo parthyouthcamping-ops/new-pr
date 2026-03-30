@@ -656,7 +656,7 @@ ${designation}`;
                                         <div className="flex items-center justify-between border-l-4 border-primary pl-6">
                                             <h3 className="text-xl font-semibold">Luxury Hotels</h3>
                                             <Button variant="outline" size="sm" className="rounded-xl" onClick={() => {
-                                                const h: Hotel = { id: uuidv4(), name: "", location: "", rating: 5, description: "", roomType: "", photos: [] };
+                                                const h: HotelType = { id: uuidv4(), name: "", location: "", rating: 5, description: "", roomType: "", photos: [] };
                                                 setFormData({ ...formData, highLevelHotels: [...(formData.highLevelHotels || []), h] });
                                             }}>+ Add Luxury Stay</Button>
                                         </div>
