@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
+import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -22,13 +22,6 @@ function generateRandomString(length: number = 6) {
 export async function POST(request: Request) {
     console.log('[API/QUOTATION/CREATE] Request received.');
 
-    if (!process.env.DATABASE_URL) {
-        console.error('[API/QUOTATION/CREATE] DATABASE_URL missing.');
-        return NextResponse.json({ error: 'DATABASE_URL not set' }, { status: 500 });
-    }
-
-    const sql = neon(process.env.DATABASE_URL);
-
     try {
         const body = await request.json();
         const { trip_name, price, itinerary, clientName, destination } = body;
@@ -48,13 +41,19 @@ export async function POST(request: Request) {
 
         console.log('[API/QUOTATION/CREATE] Inserting quotation:', { id, slug, finalTripName });
 
-        // Ensure itinerary is a valid JSON string if it's an object
-        const itineraryJson = typeof itinerary === 'string' ? itinerary : JSON.stringify(itinerary);
+        // Insert using Supabase Client
+        const { error } = await supabase.from('quotations').insert({
+            id,
+            slug,
+            trip_name: finalTripName,
+            price,
+            itinerary,
+            created_at: new Date().toISOString()
+        });
 
-        await sql`
-            INSERT INTO quotations (id, slug, trip_name, price, itinerary, created_at, updated_at)
-            VALUES (${id}, ${slug}, ${finalTripName}, ${price}, ${itineraryJson}::jsonb, NOW(), NOW())
-        `;
+        if (error) {
+            throw error;
+        }
 
         const protocol = request.headers.get('x-forwarded-proto') || 'http';
         const host = request.headers.get('host');

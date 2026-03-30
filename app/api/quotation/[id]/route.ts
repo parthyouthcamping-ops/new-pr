@@ -1,15 +1,10 @@
 import { NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    if (!process.env.DATABASE_URL) {
-        return NextResponse.json({ error: 'DATABASE_URL not set' }, { status: 500 });
-    }
-    const sql = neon(process.env.DATABASE_URL);
-
     try {
         const { id } = await params;
 
@@ -18,13 +13,15 @@ export async function GET(
         }
 
         // Fetch quotation from DB by slug or by ID
-        const result = await sql`
-            SELECT id, slug, itinerary, created_at
-            FROM quotations
-            WHERE slug = ${id} OR id = ${id}
-        `;
+        const { data: result, error } = await supabase
+            .from('quotations')
+            .select('id, slug, itinerary, created_at')
+            .or(`slug.eq.${id},id.eq.${id}`)
+            .limit(1);
 
-        if (result.length === 0) {
+        if (error) throw error;
+
+        if (!result || result.length === 0) {
             return NextResponse.json({ error: 'Quotation not found' }, { status: 404 });
         }
 

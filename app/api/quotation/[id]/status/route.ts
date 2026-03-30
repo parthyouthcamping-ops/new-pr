@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
+import { supabase } from '@/lib/supabase';
 
 const VALID_STATUSES = ['pending', 'reserved', 'booked', 'cancelled', 'sent'];
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-    if (!process.env.DATABASE_URL) {
-        return NextResponse.json({ error: 'DATABASE_URL not configured' }, { status: 500 });
-    }
-
     try {
         const { id } = await params;
         const { status } = await request.json();
@@ -21,16 +17,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
         console.log(`[API /quotation/${id}/status] Updating to: ${status}`);
 
-        const sql = neon(process.env.DATABASE_URL);
+        // Fetch the current quotation row directly from DB
+        const { data: record, error: fetchError } = await supabase
+            .from('quotations')
+            .select('itinerary')
+            .eq('id', id)
+            .single();
 
-        // Fetch the current quotation row directly from DB (no circular fetch)
-        const rows = await sql`SELECT itinerary FROM quotations WHERE id = ${id}`;
-        if (rows.length === 0) {
+        if (fetchError || !record) {
             console.error(`[API /quotation/${id}/status] Not found`);
             return NextResponse.json({ error: 'Quotation not found' }, { status: 404 });
         }
 
-        const quotation = rows[0].itinerary as any;
+        const quotation = record.itinerary as any;
         const prevStatus = quotation.bookingStatus;
 
         // Update status flags
@@ -38,13 +37,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         quotation.isBooked      = status === 'booked';
         quotation.isReserved    = status === 'reserved';
         
-        const jsonString = JSON.stringify(quotation);
+        const { error: updateError } = await supabase
+            .from('quotations')
+            .update({ itinerary: quotation })
+            .eq('id', id);
 
-        await sql`
-            UPDATE quotations
-            SET itinerary = ${jsonString}::jsonb
-            WHERE id = ${id}
-        `;
+        if (updateError) throw updateError;
 
         console.log(`[API /quotation/${id}/status] ${prevStatus} → ${status} ✓`);
 

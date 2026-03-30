@@ -1,19 +1,19 @@
 import { NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: Request) {
-    if (!process.env.DATABASE_URL) return NextResponse.json({ error: 'DB URL not set' }, { status: 500 });
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get('slug');
-    const sql = neon(process.env.DATABASE_URL);
 
     try {
         if (slug) {
-            const result = await sql`SELECT * FROM bookings WHERE trip_slug = ${slug} ORDER BY created_at DESC LIMIT 1`;
-            return NextResponse.json(result[0] || null);
+            const { data, error } = await supabase.from('bookings').select('*').eq('trip_slug', slug).order('created_at', { ascending: false }).limit(1).maybeSingle();
+            if (error) throw error;
+            return NextResponse.json(data || null);
         } else {
-            const result = await sql`SELECT * FROM bookings ORDER BY created_at DESC`;
-            return NextResponse.json(result);
+            const { data, error } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            return NextResponse.json(data);
         }
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
@@ -21,37 +21,18 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    if (!process.env.DATABASE_URL) return NextResponse.json({ error: 'DB URL not set' }, { status: 500 });
-    const sql = neon(process.env.DATABASE_URL);
-
     try {
         const body = await request.json();
         const { action, id, status, tripSlug, name, phone, email } = body;
 
-        // Initialize table if not exists (one-time or check)
-        await sql`
-            CREATE TABLE IF NOT EXISTS bookings (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                trip_slug TEXT NOT NULL,
-                customer_name TEXT NOT NULL,
-                phone TEXT NOT NULL,
-                email TEXT,
-                status TEXT DEFAULT 'reserved',
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            )
-        `;
-
-        try {
-            await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travelers INTEGER;`;
-            await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS travel_dates TEXT;`;
-            await sql`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS special_requests TEXT;`;
-        } catch(e) { console.error('Error adding columns', e); }
+        // Note: Table Initialization happens in Supabase Dashboard directly when the user sets it up.
 
         if (action === 'update_status') {
-            const getSlugRes = await sql`SELECT trip_slug FROM bookings WHERE id = ${id}`;
-            const activeSlug = tripSlug || (getSlugRes.length > 0 ? getSlugRes[0].trip_slug : null);
+            const { data: getSlugRes } = await supabase.from('bookings').select('trip_slug').eq('id', id).maybeSingle();
+            const activeSlug = tripSlug || (getSlugRes ? getSlugRes.trip_slug : null);
 
-            await sql`UPDATE bookings SET status = ${status} WHERE id = ${id}`;
+            const { error: updateError } = await supabase.from('bookings').update({ status }).eq('id', id);
+            if (updateError) throw updateError;
 
             // Sync the quotation document's bookingStatus so the client page reflects it
             if (activeSlug) {
@@ -85,7 +66,8 @@ export async function POST(request: Request) {
         }
 
         if (action === 'delete') {
-            await sql`DELETE FROM bookings WHERE id = ${id}`;
+            const { error } = await supabase.from('bookings').delete().eq('id', id);
+            if (error) throw error;
             return NextResponse.json({ success: true });
         }
 
@@ -101,7 +83,7 @@ export async function POST(request: Request) {
             });
             if (res.ok) {
                 const qs: any[] = await res.json();
-                const q = qs.find(q => q.slug === tripSlug);
+                const q = qs.find((q: any) => q.slug === tripSlug);
                 console.log(`[API /book] Found Quotation? ${!!q}. Current Status: ${q?.bookingStatus}`);
                 if (q && q.bookingStatus === 'booked') {
                     console.error(`[API /book] Rejected: Trip ${tripSlug} is already booked.`);
@@ -112,8 +94,8 @@ export async function POST(request: Request) {
             }
         }
 
-        const existing = await sql`SELECT * FROM bookings WHERE trip_slug = ${tripSlug} AND email = ${email}`;
-        if (existing.length > 0) {
+        const { data: existing } = await supabase.from('bookings').select('*').eq('trip_slug', tripSlug).eq('email', email);
+        if (existing && existing.length > 0) {
             console.error(`[API /book] Rejected: Duplicate booking for ${email} on ${tripSlug}.`);
             return NextResponse.json({ error: "Duplicate booking detected for this trip and email." }, { status: 400 });
         }
@@ -121,11 +103,18 @@ export async function POST(request: Request) {
         const { travelers, travelDates, specialRequests } = body;
 
         // New Booking
-        const result = await sql`
-            INSERT INTO bookings (trip_slug, customer_name, phone, email, status, travelers, travel_dates, special_requests)
-            VALUES (${tripSlug}, ${name}, ${phone}, ${email}, 'pending', ${travelers || null}, ${travelDates || null}, ${specialRequests || null})
-            RETURNING *
-        `;
+        const { data: result, error: insertError } = await supabase.from('bookings').insert({
+            trip_slug: tripSlug,
+            customer_name: name,
+            phone,
+            email,
+            status: 'pending',
+            travelers: travelers || null,
+            travel_dates: travelDates || null,
+            special_requests: specialRequests || null
+        }).select();
+
+        if (insertError) throw insertError;
 
         // Update Quotation to pending
         try {
@@ -136,7 +125,7 @@ export async function POST(request: Request) {
             });
             if (res.ok) {
                 const qs: any[] = await res.json();
-                const q = qs.find(q => q.slug === tripSlug);
+                const q = qs.find((q: any) => q.slug === tripSlug);
                 if (q && q.bookingStatus !== 'booked' && q.bookingStatus !== 'reserved') {
                     q.bookingStatus = 'pending';
                     q.updatedAt = new Date().toISOString();
@@ -149,7 +138,7 @@ export async function POST(request: Request) {
             }
         } catch (e) { console.error('Error updating quotation status to pending'); }
 
-        return NextResponse.json(result[0]);
+        return NextResponse.json(result ? result[0] : { success: true });
     } catch (error: any) {
         console.error('Booking API Error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });

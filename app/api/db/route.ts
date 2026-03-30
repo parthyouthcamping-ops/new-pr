@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
+import { supabase } from '@/lib/supabase';
 
 /** Ensure a value is safe to store in Neon JSONB (no File objects / non-serialisable values). */
 function sanitizePayload(data: any): any {
@@ -49,13 +49,6 @@ function scrubImageFields(data: any): any {
 }
 
 export async function POST(request: Request) {
-    if (!process.env.DATABASE_URL) {
-        return NextResponse.json(
-            { error: 'DATABASE_URL is not set in .env.local.' },
-            { status: 500 }
-        );
-    }
-    const sql = neon(process.env.DATABASE_URL);
     let requestData: any = {};
 
     try {
@@ -68,51 +61,55 @@ export async function POST(request: Request) {
 
             console.log('[DB API] Saving payload for id:', id, '— keys:', Object.keys(cleanData || {}));
 
-            // Stringify explicitly so Neon receives a valid JSONB string
-            const jsonString = JSON.stringify(cleanData);
+            // Stringify explicitly if needed, but Supabase accepts JS objects for JSONB columns!
+            // However, to be safe and consistent with the previous logic, we can pass cleanData directly.
 
             if (id === 'global_brand') {
-                await sql`
-                    INSERT INTO brand_settings (id, data, updated_at)
-                    VALUES ('global_brand', ${jsonString}::jsonb, ${new Date().toISOString()})
-                    ON CONFLICT (id) DO UPDATE
-                    SET data = EXCLUDED.data, updated_at = EXCLUDED.updated_at
-                `;
+                const { error } = await supabase.from('brand_settings').upsert({
+                    id: 'global_brand',
+                    data: cleanData,
+                    updated_at: new Date().toISOString()
+                });
+                if (error) throw error;
             } else {
                 const createdAt = cleanData?.createdAt || new Date().toISOString();
                 const tripName = cleanData?.destination || 'New Trip';
                 const price = cleanData?.highLevelPrice || 0;
 
-                await sql`
-                    INSERT INTO quotations (id, slug, itinerary, trip_name, price, created_at)
-                    VALUES (${id}, ${slug}, ${jsonString}::jsonb, ${tripName}, ${price}, ${createdAt})
-                    ON CONFLICT (id) DO UPDATE
-                    SET slug = EXCLUDED.slug, 
-                        itinerary = EXCLUDED.itinerary, 
-                        trip_name = EXCLUDED.trip_name, 
-                        price = EXCLUDED.price
-                `;
+                const { error } = await supabase.from('quotations').upsert({
+                    id: id,
+                    slug: slug,
+                    itinerary: cleanData,
+                    trip_name: tripName,
+                    price: price,
+                    created_at: createdAt
+                });
+                if (error) throw error;
             }
             return NextResponse.json({ success: true });
         }
 
         if (action === 'get') {
             if (id === 'global_brand') {
-                const result = await sql`SELECT data FROM brand_settings WHERE id = ${id}`;
-                return NextResponse.json(result[0]?.data || null);
+                const { data: record, error } = await supabase.from('brand_settings').select('data').eq('id', id).maybeSingle();
+                if (error) throw error;
+                return NextResponse.json(record?.data || null);
             } else {
-                const result = await sql`SELECT itinerary FROM quotations WHERE id = ${id}`;
-                return NextResponse.json(result[0]?.itinerary || null);
+                const { data: record, error } = await supabase.from('quotations').select('itinerary').eq('id', id).maybeSingle();
+                if (error) throw error;
+                return NextResponse.json(record?.itinerary || null);
             }
         }
 
         if (action === 'getAll') {
-            const result = await sql`SELECT itinerary FROM quotations ORDER BY created_at DESC`;
-            return NextResponse.json(result.map((r: any) => r.itinerary));
+            const { data: records, error } = await supabase.from('quotations').select('itinerary').order('created_at', { ascending: false });
+            if (error) throw error;
+            return NextResponse.json(records?.map((r: any) => r.itinerary) || []);
         }
 
         if (action === 'delete') {
-            await sql`DELETE FROM quotations WHERE id = ${id}`;
+            const { error } = await supabase.from('quotations').delete().eq('id', id);
+            if (error) throw error;
             return NextResponse.json({ success: true });
         }
 
@@ -127,7 +124,7 @@ export async function POST(request: Request) {
             stack: error.stack,
         });
 
-        if (error.constraint === 'quotations_slug_key') {
+        if (error.code === '23505' || error.message?.includes('quotations_slug_key')) {
             return NextResponse.json({
                 error: `The slug '${requestData.slug}' is already taken. Please try again.`,
                 code: 'DUPLICATE_SLUG'
