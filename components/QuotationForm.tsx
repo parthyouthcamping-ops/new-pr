@@ -148,7 +148,8 @@ ${designation}`;
         window.open(whatsappUrl, '_blank');
     };
 
-    const handleSave = async () => {
+    const handleSave = async (e?: React.BaseSyntheticEvent) => {
+        if (e) e.preventDefault();
         // Block save if any image upload is still running
         if (activeUploads[0] > 0 || uploadingField !== null) {
             toast.error("Please wait for all image uploads to complete before saving.");
@@ -327,9 +328,10 @@ ${designation}`;
     ];
 
     return (
-        <div className="max-w-6xl mx-auto pb-20">
+        <form onSubmit={handleSave} className="max-w-6xl mx-auto pb-20">
             <div className="flex items-center justify-between mb-12">
                 <Button
+                    type="button"
                     variant="ghost"
                     onClick={() => router.push("/admin")}
                     className="text-gray-400 font-semibold hover:text-gray-900"
@@ -349,6 +351,7 @@ ${designation}`;
                     <div className="flex items-center gap-4">
                         {isEdit && (
                             <Button
+                                type="button"
                                 variant="outline"
                                 onClick={handleWhatsAppShare}
                                 className="rounded-2xl border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-200"
@@ -357,7 +360,7 @@ ${designation}`;
                             </Button>
                         )}
                         <Button 
-                            onClick={handleSave} 
+                            type="submit"
                             disabled={isSaving || activeUploads[0] > 0}
                             className="rounded-2xl shadow-xl shadow-primary/30 min-w-[140px]"
                         >
@@ -1213,19 +1216,19 @@ ${designation}`;
             </AnimatePresence>
 
             <div className="flex justify-between">
-                <Button variant="outline" disabled={step === 1} onClick={prevStep} className="rounded-2xl px-10 border-2">
+                <Button type="button" variant="outline" disabled={step === 1} onClick={prevStep} className="rounded-2xl px-10 border-2">
                     <ChevronLeft size={20} className="mr-2" /> Previous
                 </Button>
                 {step < totalSteps ? (
-                    <Button onClick={nextStep} className="rounded-2xl px-10">
+                    <Button type="button" onClick={nextStep} className="rounded-2xl px-10">
                         Next Section <ChevronRight size={20} className="ml-2" />
                     </Button>
                 ) : (
-                    <Button onClick={handleSave} disabled={isSaving || activeUploads[0] > 0} className="rounded-2xl px-10 shadow-lg shadow-primary/20">
+                    <Button type="submit" disabled={isSaving || activeUploads[0] > 0} className="rounded-2xl px-10 shadow-lg shadow-primary/20">
                         {isSaving ? "Saving..." : activeUploads[0] > 0 ? "Uploading..." : <><Save size={20} className="mr-2" /> Save Proposal</>}
                     </Button>
                 )}
             </div>
-        </div>
+        </form>
     );
 }

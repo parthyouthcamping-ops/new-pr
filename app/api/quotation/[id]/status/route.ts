@@ -24,27 +24,25 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         const sql = neon(process.env.DATABASE_URL);
 
         // Fetch the current quotation row directly from DB (no circular fetch)
-        const rows = await sql`SELECT data FROM quotations WHERE id = ${id}`;
+        const rows = await sql`SELECT itinerary FROM quotations WHERE id = ${id}`;
         if (rows.length === 0) {
             console.error(`[API /quotation/${id}/status] Not found`);
             return NextResponse.json({ error: 'Quotation not found' }, { status: 404 });
         }
 
-        const quotation = rows[0].data as any;
+        const quotation = rows[0].itinerary as any;
         const prevStatus = quotation.bookingStatus;
 
         // Update status flags
         quotation.bookingStatus = status;
         quotation.isBooked      = status === 'booked';
         quotation.isReserved    = status === 'reserved';
-        quotation.updatedAt     = new Date().toISOString();
-
+        
         const jsonString = JSON.stringify(quotation);
 
         await sql`
             UPDATE quotations
-            SET data       = ${jsonString}::jsonb,
-                updated_at = ${quotation.updatedAt}
+            SET itinerary = ${jsonString}::jsonb
             WHERE id = ${id}
         `;
 

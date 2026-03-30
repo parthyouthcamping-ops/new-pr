@@ -80,26 +80,35 @@ export async function POST(request: Request) {
                 `;
             } else {
                 const createdAt = cleanData?.createdAt || new Date().toISOString();
+                const tripName = cleanData?.destination || 'New Trip';
+                const price = cleanData?.highLevelPrice || 0;
+
                 await sql`
-                    INSERT INTO quotations (id, slug, data, updated_at, created_at)
-                    VALUES (${id}, ${slug}, ${jsonString}::jsonb, ${new Date().toISOString()}, ${createdAt})
+                    INSERT INTO quotations (id, slug, itinerary, trip_name, price, created_at)
+                    VALUES (${id}, ${slug}, ${jsonString}::jsonb, ${tripName}, ${price}, ${createdAt})
                     ON CONFLICT (id) DO UPDATE
-                    SET slug = EXCLUDED.slug, data = EXCLUDED.data, updated_at = EXCLUDED.updated_at
+                    SET slug = EXCLUDED.slug, 
+                        itinerary = EXCLUDED.itinerary, 
+                        trip_name = EXCLUDED.trip_name, 
+                        price = EXCLUDED.price
                 `;
             }
             return NextResponse.json({ success: true });
         }
 
         if (action === 'get') {
-            const result = id === 'global_brand'
-                ? await sql`SELECT data FROM brand_settings WHERE id = ${id}`
-                : await sql`SELECT data FROM quotations WHERE id = ${id}`;
-            return NextResponse.json(result[0]?.data || null);
+            if (id === 'global_brand') {
+                const result = await sql`SELECT data FROM brand_settings WHERE id = ${id}`;
+                return NextResponse.json(result[0]?.data || null);
+            } else {
+                const result = await sql`SELECT itinerary FROM quotations WHERE id = ${id}`;
+                return NextResponse.json(result[0]?.itinerary || null);
+            }
         }
 
         if (action === 'getAll') {
-            const result = await sql`SELECT data FROM quotations ORDER BY updated_at DESC`;
-            return NextResponse.json(result.map((r: any) => r.data));
+            const result = await sql`SELECT itinerary FROM quotations ORDER BY created_at DESC`;
+            return NextResponse.json(result.map((r: any) => r.itinerary));
         }
 
         if (action === 'delete') {

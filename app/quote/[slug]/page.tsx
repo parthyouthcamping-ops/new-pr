@@ -19,9 +19,17 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         try {
             if (process.env.DATABASE_URL) {
                 const sql = neon(process.env.DATABASE_URL);
-                const result = await sql`SELECT data FROM quotations WHERE slug = ${slug} LIMIT 1`;
+                const result = await sql`SELECT id, slug, trip_name, price, itinerary, created_at FROM quotations WHERE slug = ${slug} LIMIT 1`;
                 if (result.length > 0) {
-                    data = result[0].data;
+                    const record = result[0];
+                    data = {
+                        ...record.itinerary,
+                        id: record.id,
+                        slug: record.slug,
+                        trip_name: record.trip_name,
+                        price: record.price,
+                        createdAt: record.created_at
+                    } as any;
                 }
             }
         } catch (e) {
