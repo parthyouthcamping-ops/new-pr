@@ -159,6 +159,8 @@ ${designation}`;
         console.log("[QuotationForm] Starting save process...");
 
         try {
+            const safeNumber = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+
             // Scrub: ensure all photo fields contain only URL strings (http/https)
             const isUrl = (v: unknown): v is string =>
                 typeof v === 'string' && (v.startsWith('http://') || v.startsWith('https://'));
@@ -180,42 +182,56 @@ ${designation}`;
                     ...day,
                     photos: (day.photos || []).filter(isUrl)
                 })),
-                expert: {
-                    ...formData.expert!,
-                    photo: isUrl(formData.expert?.photo) ? formData.expert?.photo : undefined
-                }
+                lowLevelPrice: safeNumber(formData.lowLevelPrice),
+                highLevelPrice: safeNumber(formData.highLevelPrice),
+                // `packagePrice` exists in the Quotation type; keep it compatible with legacy displays.
+                packagePrice: safeNumber((formData as any).packagePrice ?? formData.highLevelPrice),
+                expert: formData.expert
+                    ? {
+                        ...formData.expert,
+                        photo: isUrl(formData.expert?.photo) ? formData.expert?.photo : undefined
+                    }
+                    : formData.expert
             };
 
-            const slug = formData.slug || generateSlug(formData.destination || "trip", formData.id || uuidv4());
+            const id = formData.id || uuidv4();
+            const slug = formData.slug || generateSlug(formData.destination || "trip", id);
+            const now = new Date().toISOString();
 
-            const finalData = {
-                ...scrubbedData,
-                trip_name: formData.destination || "Unnamed Luxury Trip",
-                price: formData.highLevelPrice || 0,
-                itinerary: scrubbedData.itinerary,
-                slug,
-                id: formData.id || uuidv4()
-            };
-
-            console.log("[QuotationForm] Saving via /api/quotation/create...", { slug });
-
-            const response = await fetch("/api/quotation/create", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(finalData)
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.error || result.details || "Failed to save quotation");
+            // Basic guardrails so the public quote page doesn't crash.
+            if (!formData.clientName) {
+                toast.error("Please enter the client name before saving.");
+                return;
+            }
+            if (!formData.destination) {
+                toast.error("Please enter the trip name/destination before saving.");
+                return;
+            }
+            if (!formData.itinerary || formData.itinerary.length === 0) {
+                toast.error("Please add at least one itinerary day before saving.");
+                return;
+            }
+            if (!scrubbedData.expert?.name || !scrubbedData.expert?.whatsapp) {
+                toast.error("Please fill expert name and WhatsApp number before saving.");
+                return;
             }
 
-            console.log("[QuotationForm] Save successful!", result);
+            const quotationToSave = {
+                ...(scrubbedData as any),
+                id,
+                slug,
+                createdAt: (formData as any).createdAt || now,
+                updatedAt: (formData as any).updatedAt || now,
+                status: scrubbedData.status || "Draft",
+            };
+
+            console.log("[QuotationForm] Saving via saveQuotation()...", { slug, id });
+            await saveQuotation(quotationToSave as any);
+
             toast.success("Proposal saved successfully!");
             
             // Redirect to the public quotation view
-            router.push(`/quotation/${result.slug}`);
+            router.push(`/quote/${slug}`);
         } catch (error: any) {
             console.error("[QuotationForm] Save error:", error);
             toast.error(error.message || "Failed to save proposal. Please check your connection.");
