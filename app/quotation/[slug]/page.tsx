@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { neon } from '@neondatabase/serverless';
+import { supabase } from '@/lib/supabase';
 import LuxuryQuotationUI from "@/components/LuxuryQuotationUI";
 
 export const dynamic = 'force-dynamic';
@@ -11,30 +11,29 @@ export default async function QuotationPage({
     params: Promise<{ slug: string }> 
 }) {
     const { slug } = await params;
+    console.log(`[quotation/${slug}] Fetching from Supabase...`);
 
-    if (!process.env.DATABASE_URL) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <p className="text-red-500 font-bold">DATABASE_URL is not configured.</p>
-            </div>
-        );
-    }
-
-    const sql = neon(process.env.DATABASE_URL);
     let data = null;
 
     try {
-        const result = await sql`
-            SELECT id, slug, trip_name, price, itinerary, created_at
-            FROM quotations
-            WHERE slug = ${slug}
-            LIMIT 1
-        `;
+        const { data: record, error } = await supabase
+            .from('quotations')
+            .select('*')
+            .eq('slug', slug)
+            .single();
 
-        if (result.length > 0) {
-            const record = result[0];
+        if (error) {
+            console.error(`[quotation/${slug}] Supabase Error:`, error.message);
+        }
+
+        if (record) {
+            // Unpack itinerary JSON if it's a string, or use directly if it's an object
+            const itineraryData = typeof record.itinerary === 'string' 
+                ? JSON.parse(record.itinerary) 
+                : record.itinerary;
+                
             data = {
-                ...record.itinerary,
+                ...itineraryData,
                 id: record.id,
                 slug: record.slug,
                 trip_name: record.trip_name,
@@ -42,11 +41,12 @@ export default async function QuotationPage({
                 createdAt: record.created_at
             };
         }
-    } catch (error) {
-        console.error("Failed to fetch quotation:", error);
+    } catch (error: any) {
+        console.error(`[quotation/${slug}] Exception:`, error.message);
     }
 
     if (!data) {
+        console.log(`[quotation/${slug}] Data not found. Triggering 404.`);
         return notFound();
     }
 
