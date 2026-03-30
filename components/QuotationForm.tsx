@@ -156,6 +156,8 @@ ${designation}`;
         }
 
         setIsSaving(true);
+        console.log("[QuotationForm] Starting save process...");
+
         try {
             // Scrub: ensure all photo fields contain only URL strings (http/https)
             const isUrl = (v: unknown): v is string =>
@@ -184,20 +186,42 @@ ${designation}`;
                 }
             };
 
-            const finalData: Quotation = {
-                ...scrubbedData as Quotation,
-                slug: formData.slug || generateSlug(formData.destination || "trip", formData.id || uuidv4()),
-                updatedAt: new Date().toISOString()
+            const slug = formData.slug || generateSlug(formData.destination || "trip", formData.id || uuidv4());
+
+            const finalData = {
+                ...scrubbedData,
+                trip_name: formData.destination || "Unnamed Luxury Trip",
+                price: formData.highLevelPrice || 0,
+                itinerary: scrubbedData.itinerary,
+                slug,
+                id: formData.id || uuidv4()
             };
-            console.log("Saving payload:", finalData);
-            await saveQuotation(finalData);
+
+            console.log("[QuotationForm] Saving via /api/quotation/create...", { slug });
+
+            const response = await fetch("/api/quotation/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(finalData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || result.details || "Failed to save quotation");
+            }
+
+            console.log("[QuotationForm] Save successful!", result);
             toast.success("Proposal saved successfully!");
-            router.push("/admin");
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to save proposal. Please check your connection.");
+            
+            // Redirect to the public quotation view
+            router.push(`/quotation/${result.slug}`);
+        } catch (error: any) {
+            console.error("[QuotationForm] Save error:", error);
+            toast.error(error.message || "Failed to save proposal. Please check your connection.");
         } finally {
             setIsSaving(false);
+            console.log("[QuotationForm] Save process finished.");
         }
     };
 
