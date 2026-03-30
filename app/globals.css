@@ -15,11 +15,40 @@
 
     /* Rich Deep Shade: #B33D00 */
     --primary-deep: 179, 61, 0;
+
+    /* Typography Colors (Solid - No Opacity) */
+    --text-dark: #111827; /* Gray 900 - Headings */
+    --text-mid: #374151;  /* Gray 700 - Body */
+    --text-soft: #6B7280; /* Gray 500 - Metadata */
 }
 
 body {
     color: rgb(var(--foreground));
     background: rgb(var(--background));
+}
+
+@layer utilities {
+    .brush-underline {
+        @apply relative inline-block;
+    }
+    .brush-underline::after {
+        content: "";
+        @apply absolute -bottom-2 left-0 w-full h-1 bg-primary opacity-60 rounded-full;
+        transform: skewX(-15deg);
+    }
+    
+    .wavy-edge {
+        mask-image: radial-gradient(circle at 10px 100%, transparent 10px, white 11px);
+        mask-size: 20px 100%;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }
 
 @layer components {

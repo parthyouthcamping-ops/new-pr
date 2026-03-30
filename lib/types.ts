@@ -6,6 +6,8 @@ export type Hotel = {
     description: string;
     roomType: string;
     photos: string[]; // Base64 or URLs
+    amenities?: string[];
+    isRecommended?: boolean;
 };
 
 export type DayItinerary = {

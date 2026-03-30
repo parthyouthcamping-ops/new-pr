@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import useEmblaCarousel from "embla-carousel-react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,137 +12,130 @@ interface ImageSliderProps {
 }
 
 export const ImageSlider = ({
-    images,
+    images = [],
     className,
     autoplay = true,
-    interval = 4000,
+    interval = 5000,
 }: ImageSliderProps) => {
-    const [emblaRef, emblaApi] = useEmblaCarousel({
-        loop: true,
-        dragFree: false,
-        duration: 30, // smooth easing
-    });
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const [selectedIndex, setSelectedIndex] = useState(0);
-    const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-    const autoplayTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-    const isHovered = useRef(false);
+    // Minimum swipe distance in px
+    const minSwipeDistance = 50;
 
-    const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
-    const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
-    const scrollTo  = useCallback((i: number) => emblaApi?.scrollTo(i), [emblaApi]);
+    const nextSlide = useCallback(() => {
+        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    }, [images.length]);
 
-    const onSelect = useCallback(() => {
-        if (!emblaApi) return;
-        setSelectedIndex(emblaApi.selectedScrollSnap());
-    }, [emblaApi]);
+    const prevSlide = useCallback(() => {
+        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    }, [images.length]);
 
+    const goToSlide = (index: number) => {
+        setCurrentIndex(index);
+    };
+
+    // Autoplay logic
     useEffect(() => {
-        if (!emblaApi) return;
-        setScrollSnaps(emblaApi.scrollSnapList());
-        emblaApi.on("select", onSelect);
-        onSelect();
-        return () => { emblaApi.off("select", onSelect); };
-    }, [emblaApi, onSelect]);
-
-    // Autoplay
-    useEffect(() => {
-        if (!autoplay || !emblaApi || images?.length <= 1) return;
-        const start = () => {
-            autoplayTimer.current = setInterval(() => {
-                if (!isHovered.current) emblaApi.scrollNext();
-            }, interval);
+        if (autoplay && images.length > 1) {
+            timerRef.current = setInterval(nextSlide, interval);
+        }
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
         };
-        start();
-        return () => { if (autoplayTimer.current) clearInterval(autoplayTimer.current); };
-    }, [autoplay, emblaApi, interval, images]);
+    }, [autoplay, nextSlide, interval, images.length]);
 
-    if (!images?.length) {
-        return (
-            <div className={cn("relative overflow-hidden bg-gray-100 flex items-center justify-center aspect-[4/3]", className)}>
-                <span className="text-gray-300 text-xs font-bold uppercase tracking-widest">No Photos</span>
-            </div>
-        );
-    }
+    // Touch handlers for swipe
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
 
-    if (images.length === 1) {
+    const onTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) nextSlide();
+        if (isRightSwipe) prevSlide();
+    };
+
+    if (!images || images.length === 0) {
         return (
-            <div className={cn("relative overflow-hidden", className)}>
-                <img
-                    src={images[0]}
-                    alt="Destination"
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover aspect-[4/3]"
-                />
+            <div className={cn("w-full bg-gray-100 flex items-center justify-center rounded-2xl min-h-[300px]", className)}>
+                <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">No Photos Available</span>
             </div>
         );
     }
 
     return (
-        <div
-            className={cn("relative group overflow-hidden", className)}
-            onMouseEnter={() => { isHovered.current = true; }}
-            onMouseLeave={() => { isHovered.current = false; }}
+        <div 
+            className={cn("relative w-full overflow-hidden group select-none", className)}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
         >
-            {/* Slides */}
-            <div className="overflow-hidden h-full" ref={emblaRef}>
-                <div className="flex h-full touch-pan-y">
-                    {images.map((img, index) => (
-                        <div key={index} className="flex-[0_0_100%] min-w-0 relative">
-                            <img
-                                src={img}
-                                alt={`Photo ${index + 1}`}
-                                loading={index === 0 ? "eager" : "lazy"}
-                                decoding="async"
-                                className="w-full h-full object-cover aspect-[4/3]"
-                                style={{ imageRendering: "auto" }}
-                            />
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Prev / Next arrows — visible on hover */}
-            <button
-                aria-label="Previous image"
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black/50 hover:scale-110 z-10"
-                onClick={scrollPrev}
+            {/* Slider Track */}
+            <div 
+                className="flex transition-transform duration-500 ease-in-out h-full"
+                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
             >
-                <ChevronLeft size={18} />
-            </button>
-            <button
-                aria-label="Next image"
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black/50 hover:scale-110 z-10"
-                onClick={scrollNext}
-            >
-                <ChevronRight size={18} />
-            </button>
-
-            {/* Pagination dots */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
-                {scrollSnaps.map((_, i) => (
-                    <button
-                        key={i}
-                        aria-label={`Go to slide ${i + 1}`}
-                        onClick={() => scrollTo(i)}
-                        className={cn(
-                            "rounded-full transition-all duration-300",
-                            i === selectedIndex
-                                ? "w-6 h-1.5 bg-white"
-                                : "w-1.5 h-1.5 bg-white/40 hover:bg-white/70"
-                        )}
-                    />
+                {images.map((img, idx) => (
+                    <div key={idx} className="w-full flex-shrink-0 h-full">
+                        <img
+                            src={img}
+                            alt={`Slide ${idx + 1}`}
+                            loading={idx === 0 ? "eager" : "lazy"}
+                            decoding="async"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
                 ))}
             </div>
 
-            {/* Progress bar at top */}
-            <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/10 z-10">
-                <div
-                    className="h-full bg-white/60 transition-all duration-300"
-                    style={{ width: `${((selectedIndex + 1) / scrollSnaps.length) * 100}%` }}
-                />
-            </div>
+            {/* Desktop Navigation Arrows */}
+            {images.length > 1 && (
+                <>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); prevSlide(); }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/20 backdrop-blur-md text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex hover:bg-black/40"
+                        aria-label="Previous slide"
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); nextSlide(); }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/20 backdrop-blur-md text-white border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex hover:bg-black/40"
+                        aria-label="Next slide"
+                    >
+                        <ChevronRight size={24} />
+                    </button>
+                </>
+            )}
+
+            {/* Pagination Dots */}
+            {images.length > 1 && (
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+                    {images.map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => goToSlide(idx)}
+                            className={cn(
+                                "h-1.5 transition-all duration-300 rounded-full",
+                                currentIndex === idx ? "w-8 bg-white" : "w-1.5 bg-white/40"
+                            )}
+                            aria-label={`Go to slide ${idx + 1}`}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
