@@ -16,8 +16,13 @@ function scrubHotels(hotels: any[]): any[] {
 function sanitisePayload(data: any): any {
     if (!data || typeof data !== 'object') return data;
 
+    const isBase64 = (v: unknown): v is string =>
+        typeof v === 'string' && v.startsWith('data:image/');
+
     const clean = {
         ...data,
+        // Allow base64 or URL for companyLogo (BrandSettings)
+        companyLogo: (isUrl(data.companyLogo) || isBase64(data.companyLogo)) ? data.companyLogo : null,
         heroImage:        isUrl(data.heroImage)        ? data.heroImage        : null,
         coverImage:       isUrl(data.coverImage)       ? data.coverImage       : null,
         routeMap:         isUrl(data.routeMap)         ? data.routeMap         : null,
