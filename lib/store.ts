@@ -36,7 +36,18 @@ export const saveQuotation = async (quotation: Quotation) => {
 };
 
 export const deleteQuotation = async (id: string) => {
-    await db.delete(id);
+    try {
+        const res = await fetch(`/api/quotation/${id}`, {
+            method: 'DELETE',
+        });
+        if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || 'Failed to delete quotation');
+        }
+    } catch (error) {
+        console.error('Delete failed:', error);
+        throw error;
+    }
 };
 
 import { PREDEFINED_QUOTES } from "./itineraries";

@@ -8,15 +8,21 @@ interface ImageSliderProps {
     images: string[];
     className?: string;
     autoplay?: boolean;
+    autoSlide?: boolean; // alias for ease of use
     interval?: number;
+    showDots?: boolean;
 }
 
 export const ImageSlider = ({
     images = [],
     className,
     autoplay = true,
+    autoSlide = true,
     interval = 5000,
+    showDots = true,
 }: ImageSliderProps) => {
+    const finalAutoplay = autoplay && autoSlide;
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -39,13 +45,13 @@ export const ImageSlider = ({
 
     // Autoplay logic
     useEffect(() => {
-        if (autoplay && images.length > 1) {
+        if (finalAutoplay && images.length > 1) {
             timerRef.current = setInterval(nextSlide, interval);
         }
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [autoplay, nextSlide, interval, images.length]);
+    }, [finalAutoplay, nextSlide, interval, images.length]);
 
     // Touch handlers for swipe
     const onTouchStart = (e: React.TouchEvent) => {
@@ -121,7 +127,7 @@ export const ImageSlider = ({
             )}
 
             {/* Pagination Dots */}
-            {images.length > 1 && (
+            {showDots && images.length > 1 && (
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
                     {images.map((_, idx) => (
                         <button
@@ -129,7 +135,7 @@ export const ImageSlider = ({
                             onClick={() => goToSlide(idx)}
                             className={cn(
                                 "h-1.5 transition-all duration-300 rounded-full",
-                                currentIndex === idx ? "w-8 bg-white" : "w-1.5 bg-white/40"
+                                currentIndex === idx ? "w-8 bg-white shadow-lg" : "w-1.5 bg-white/40 shadow-sm"
                             )}
                             aria-label={`Go to slide ${idx + 1}`}
                         />

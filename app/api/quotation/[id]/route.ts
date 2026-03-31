@@ -1,5 +1,6 @@
 
 import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 import { getQuotationApiByIdOrSlugSmart } from "@/lib/quotations-smart";
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
@@ -24,6 +25,23 @@ export async function GET(request: Request, { params }: { params: { id: string }
         return NextResponse.json(quoteData);
     } catch (error: any) {
         console.error('[FETCH QUOTATION ERROR]:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+    try {
+        const { id } = params;
+        if (!id) {
+            return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+        }
+
+        const { error } = await supabase.from('quotations').delete().eq('id', id);
+        if (error) throw error;
+
+        return NextResponse.json({ success: true, message: 'Quotation deleted successfully' });
+    } catch (error: any) {
+        console.error('[DELETE QUOTATION ERROR]:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

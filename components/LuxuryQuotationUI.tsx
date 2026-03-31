@@ -362,25 +362,19 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                 <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
                     <div className="flex items-center gap-4">
                         <a
-                            href={brand && brand.websiteLink ? brand.websiteLink : "https://www.youthcamping.in/"}
+                            href="https://www.youthcamping.in/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:opacity-80 transition-opacity"
-                            style={{ cursor: 'pointer' }}
+                            className="relative z-50 block hover:opacity-90 transition-opacity cursor-pointer"
                         >
-                            {brand && brand.companyLogo ? (
-                                <img 
-                                    src={brand.companyLogo} 
-                                    className={`h-10 md:h-14 w-auto drop-shadow-sm transition-all duration-700 ${
-                                        brand.logoMode === 'fill' ? 'object-fill' :
-                                        brand.logoMode === 'cover' ? 'object-cover' :
-                                        'object-contain'
-                                    }`} 
-                                    alt={brand.companyName || "Logo"} 
-                                />
-                            ) : (
-                                <img src="/images/logo-horizontal.png" className="h-[40px] md:h-[60px] w-auto object-contain" alt="YouthCamping Logo" />
-                            )}
+                            <img 
+                                src={brand?.companyLogo || "/logo.png"} 
+                                className="h-10 md:h-14 w-auto object-contain drop-shadow-sm transition-all duration-500"
+                                alt="" 
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = "/logo.png";
+                                }}
+                            />
                         </a>
                         {/* Status pill reads liveStatus — updates immediately after booking */}
                         <div className={`hidden sm:flex px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white shadow-sm transition-colors duration-500 ${
@@ -399,330 +393,227 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
             </header>
 
             {/* ── CINEMATIC HERO ── */}
-            <section className="relative h-[85vh] md:h-screen w-full overflow-hidden no-print">
-                <ImageSlider 
-                    images={[
-                        ...(q.heroImage ? [q.heroImage] : []),
-                        ...(q.experiencePhotos || []),
-                        ...(q.itinerary?.flatMap(d => d.photos || []) || [])
-                    ].filter(Boolean).slice(0, 10) as string[]} 
-                    className="w-full h-full"
-                    interval={6000}
-                />
+            <section className="relative h-screen w-full overflow-hidden no-print">
+                <div className="absolute inset-0 z-0 ken-burns">
+                    <ImageSlider 
+                        images={[
+                            ...(q.heroImage ? [q.heroImage] : []),
+                            ...(q.experiencePhotos || []),
+                            ...(q.itinerary?.flatMap(d => d.photos || []) || [])
+                        ].filter(Boolean).slice(0, 10) as string[]} 
+                        className="w-full h-full object-cover"
+                        interval={6000}
+                    />
+                </div>
                 
                 {/* Refined Glass Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/80 z-10 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-[#0A1810] z-10 pointer-events-none" />
 
                 {/* Hero Content */}
                 <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-white px-4">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-center space-y-4 md:space-y-6 max-w-5xl"
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="text-center space-y-8 max-w-6xl"
                     >
-                        <div className="space-y-1">
-                            <span className="text-xs md:text-sm font-bold uppercase tracking-[0.4em] text-white drop-shadow-lg">
-                                {q.clientName || 'Guest'}&apos;s
-                            </span>
-                            <h1 className="text-5xl md:text-[10rem] font-serif tracking-tight leading-[0.9] drop-shadow-2xl uppercase text-white">
+                        <div className="space-y-4">
+                            <motion.span 
+                                initial={{ opacity: 0, letterSpacing: "0.2em" }}
+                                animate={{ opacity: 1, letterSpacing: "0.5em" }}
+                                transition={{ duration: 1.2 }}
+                                className="block text-xs md:text-sm font-black uppercase text-primary/90"
+                            >
+                                {q.clientName || 'Guest'}&apos;s EXCLUSIVE JOURNEY
+                            </motion.span>
+                            
+                            <h1 className="text-6xl md:text-[11rem] font-serif tracking-tighter leading-[0.85] uppercase drop-shadow-2xl">
                                 {q.destination.split(',')[0]}
                             </h1>
-                            <p className="text-sm md:text-xl font-medium tracking-[0.2em] uppercase text-white">
-                                {q.duration || 'Personalized Luxury Escape'}
-                            </p>
+                            
+                            <div className="flex flex-wrap justify-center gap-4 md:gap-8 pt-4">
+                                <div className="flex items-center gap-2">
+                                    <Star size={16} className="text-primary fill-primary" />
+                                    <span className="text-xs md:text-sm font-black uppercase tracking-widest text-white">4.9/5 Rating</span>
+                                </div>
+                                <div className="w-px h-4 bg-white/20 my-auto hidden md:block" />
+                                <div className="flex items-center gap-2">
+                                    <Users size={16} className="text-primary" />
+                                    <span className="text-xs md:text-sm font-black uppercase tracking-widest text-white">{q.pax} Travelers</span>
+                                </div>
+                                <div className="w-px h-4 bg-white/20 my-auto hidden md:block" />
+                                <div className="flex items-center gap-2">
+                                    <Calendar size={16} className="text-primary" />
+                                    <span className="text-xs md:text-sm font-black uppercase tracking-widest text-white">{q.duration}</span>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Duration Capsule */}
-                        <div className="pt-12 flex flex-col items-center gap-6">
-                            <div className="px-8 py-3 rounded-full border border-white/30 backdrop-blur-md bg-white/10 text-[10px] md:text-xs font-black uppercase tracking-[0.3em]">
-                                {q.duration}
+                        {/* Glassmorphism Panel */}
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.5, duration: 0.8 }}
+                            className="glass-panel-dark mx-auto max-w-3xl p-8 md:p-12 rounded-[3.5rem] border border-white/10 backdrop-blur-3xl shadow-2xl space-y-8 bg-black/40"
+                        >
+                            <p className="text-sm md:text-xl font-bold text-white leading-relaxed uppercase tracking-widest">
+                                {q.duration} of handpicked experiences, luxury stays, and seamless discovery in the heart of {q.destination}.
+                            </p>
+                            
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
+                                {renderBookingButton("h-16 px-12 bg-primary text-white hover:bg-primary-deep rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/40 transition-all hover:scale-105 w-full sm:w-auto")}
+                                <Button 
+                                    onClick={() => window.open(`https://wa.me/${(q.expert?.whatsapp || '').replace(/[^0-9]/g, '')}`, '_blank')}
+                                    className="h-16 px-12 bg-white text-black hover:bg-gray-200 rounded-2xl font-black uppercase tracking-widest transition-all hover:scale-105 w-full sm:w-auto"
+                                >
+                                    WhatsApp Expert
+                                </Button>
                             </div>
-                            <motion.div 
-                                animate={{ y: [0, 10, 0] }}
-                                transition={{ repeat: Infinity, duration: 2 }}
-                                className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center p-1"
-                            >
-                                <div className="w-1 h-2 bg-white rounded-full" />
-                            </motion.div>
-                        </div>
+                        </motion.div>
+
+                        <motion.div 
+                            animate={{ y: [0, 15, 0] }}
+                            transition={{ repeat: Infinity, duration: 2 }}
+                            className="pt-12 cursor-pointer"
+                            onClick={() => document.getElementById('itinerary')?.scrollIntoView({ behavior: 'smooth' })}
+                        >
+                            <div className="flex flex-col items-center gap-3">
+                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60">Scroll to explore</span>
+                                <div className="w-6 h-11 border-2 border-white/30 rounded-full flex justify-center p-2">
+                                    <motion.div className="w-1 h-2 bg-primary rounded-full transition-colors" />
+                                </div>
+                            </div>
+                        </motion.div>
                     </motion.div>
                 </div>
             </section>
 
             {/* ── METADATA CHIPS (Avian Style) ── */}
-            <div className="flex flex-wrap justify-center gap-4 py-8 bg-[#f5f5f7] no-print border-b border-gray-100">
-                <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-gray-100">
+            <div className="flex flex-wrap justify-center gap-4 py-12 bg-white no-print border-b border-gray-100">
+                <div className="flex items-center gap-3 bg-gray-50 px-6 py-3 rounded-2xl shadow-sm border border-gray-100 transition-all hover:border-primary/20">
                     <Clock size={16} className="text-primary" />
-                    <span className="text-[10px] font-black text-[#111827] uppercase tracking-widest">{q.duration}</span>
+                    <span className="text-[10px] font-black text-[#0A1810] uppercase tracking-widest">{q.duration}</span>
                 </div>
-                <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 bg-gray-50 px-6 py-3 rounded-2xl shadow-sm border border-gray-100 transition-all hover:border-primary/20">
                     <Calendar size={16} className="text-primary" />
-                    <span className="text-[10px] font-black text-[#111827] uppercase tracking-widest">
+                    <span className="text-[10px] font-black text-[#0A1810] uppercase tracking-widest">
                         {q.travelDates?.from ? new Date(q.travelDates.from).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'Flexible'}
                     </span>
                 </div>
-                <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 bg-gray-50 px-6 py-3 rounded-2xl shadow-sm border border-gray-100 transition-all hover:border-primary/20">
                     <Users size={16} className="text-primary" />
-                    <span className="text-[10px] font-black text-[#111827] uppercase tracking-widest">{q.pax} Adults</span>
+                    <span className="text-[10px] font-black text-[#0A1810] uppercase tracking-widest">{q.pax} Adults</span>
                 </div>
             </div>
 
-            {/* ── PROFESSIONAL INTRODUCTION (Avian Style) ── */}
-            <section className="py-16 md:py-24 container mx-auto px-4 md:px-6 pdf-section">
-                <div className="flex flex-col items-center text-center mb-16 md:mb-24">
-                    <span className="font-handwritten text-4xl md:text-5xl text-primary mb-2 block">We have Curated</span>
-                    <h2 className="text-3xl md:text-6xl font-serif text-[#111827] uppercase tracking-tight leading-none brush-underline pb-4">
-                        The Best Itinerary For You
-                    </h2>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-20 items-center">
-                    <div className="space-y-6 md:space-y-10">
-                        <div className="flex items-center gap-4 group">
-                            <div className="w-12 md:w-16 h-12 md:h-16 rounded-3xl bg-primary/5 flex items-center justify-center text-primary transition-all duration-500 group-hover:bg-primary group-hover:text-white">
-                                <Sparkles size={28} />
-                            </div>
-                            <h3 className="text-xl md:text-3xl font-serif text-[#111827] leading-tight">
-                                Handpicked Experiences <br/> 
-                                <span className="text-[#6B7280] font-sans text-sm md:text-base font-bold tracking-wide">For a journey like never before</span>
-                            </h3>
-                        </div>
-                        <p className="text-base md:text-xl text-[#4A4A4A] leading-relaxed font-normal">
-                            We don&apos;t just plan trips — we orchestrate masterpieces. Every detail of your {q.destination} journey has been hand-selected to ensure a seamless blend of cultural immersion and uncompromising luxury.
-                        </p>
-                    </div>
-                    <div className="relative mt-10 lg:mt-0">
-                         <img
-                             src={q.coverImage || 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2070&auto=format&fit=crop&fm=webp'}
-                             loading="lazy"
-                             decoding="async"
-                             className="w-full aspect-[16/10] object-cover rounded-3xl md:rounded-[3rem] shadow-4xl border-4 md:border-8 border-white relative z-10"
-                             alt={`${q.destination} cover`}
-                         />
-                         <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/10 rounded-full blur-3xl z-0" />
-                    </div>
-                </div>
-            </section>
-
-            {/* ── STAY & MEALS SUMMARY (Avian Style) ── */}
-            <section className="py-12 no-print">
-                <div className="container mx-auto px-4 md:px-6">
-                    <div className="bg-white rounded-[2rem] p-8 md:p-12 border border-gray-100 shadow-sm">
-                        <div className="flex flex-col gap-10">
-                            <div className="flex flex-wrap items-center justify-between gap-6 border-b border-gray-50 pb-8">
-                                {q.journeyMap?.stops?.filter(s => s.type.toLowerCase().includes('stay') || s.type.toLowerCase().includes('city')).map((stop, i, arr) => (
-                                    <div key={i} className="flex items-center gap-8 flex-1 min-w-[200px]">
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-5xl md:text-7xl font-sans font-light text-gray-200">{(stop as any).nights || (i % 2 === 0 ? '2' : '1')}</span>
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] font-black text-[#6B7280] uppercase tracking-widest">Night in</span>
-                                                <span className="text-lg md:text-xl font-black text-[#111827] uppercase tracking-tight">{stop.name}</span>
-                                            </div>
-                                        </div>
-                                        {i < arr.length - 1 && (
-                                            <div className="h-12 w-px bg-gray-200 hidden lg:block ml-auto" />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="flex items-center gap-6 bg-[#f5f5f7] p-6 rounded-2xl group transition-all duration-300 hover:bg-white hover:shadow-xl hover:shadow-black/5">
-                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary">
-                                        <HotelIcon size={24} />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-[#6B7280] uppercase tracking-widest mb-0.5">Accommodation</span>
-                                        <span className="text-sm md:text-base font-bold text-[#111827]">1 Rooms at all locations ({selectedTier})</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-6 bg-[#f5f5f7] p-6 rounded-2xl group transition-all duration-300 hover:bg-white hover:shadow-xl hover:shadow-black/5">
-                                    <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-primary">
-                                        <Utensils size={24} />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-[#6B7280] uppercase tracking-widest mb-0.5">Meal Plan</span>
-                                        <span className="text-sm md:text-base font-bold text-[#111827]">Breakfast & Dinner Summary</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ── TRAVELLING — Avian Route Map ── */}
-            {q.journeyMap && (
-                <section className="py-16 md:py-24 bg-[#fafafa] relative overflow-hidden pdf-section border-y border-gray-100">
-                    <div className="container mx-auto px-4 md:px-6 relative z-10 text-center">
-                        <div className="flex flex-col items-center mb-16">
-                            <span className="font-handwritten text-3xl text-primary mb-2 block">Travelling</span>
-                            <h2 className="text-3xl md:text-5xl font-serif text-[#111827] uppercase tracking-tight leading-none brush-underline pb-4">
-                                Your Route Map
-                            </h2>
-                        </div>
-
-                        <div className="relative max-w-5xl mx-auto">
-                            {/* Path Line - Centered Dotted */}
-                            <div className="absolute top-[2.5rem] left-0 w-full h-0.5 border-t-2 border-dotted border-gray-300 hidden md:block" />
-
-                            <div className="overflow-x-auto pb-8 no-scrollbar -mx-4 px-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0">
-                                <div className="flex md:justify-between items-start gap-12 md:gap-0 relative min-w-max md:min-w-0">
-                                    {q.journeyMap?.stops?.map((stop, i) => (
-                                        <div key={i} className="relative flex flex-col items-center group min-w-[120px]">
-                                            {/* Stop Icon Node - On the line */}
-                                            <div className="w-14 h-14 rounded-2xl bg-white shadow-lg border border-gray-200 flex items-center justify-center relative z-20 transition-all duration-500 group-hover:scale-110 group-hover:border-primary group-hover:text-primary">
-                                                <StopIcon type={stop.type} icon={stop.icon} />
-                                            </div>
-                                            
-                                            {/* Stop Name & Type Below */}
-                                            <div className="mt-4 text-center">
-                                                <span className="text-[9px] font-black text-[#6B7280] uppercase tracking-widest block mb-1">
-                                                    {stop.type}
-                                                </span>
-                                                <span className="text-xs md:text-sm font-black text-[#111827] uppercase tracking-tight block">
-                                                    {stop.name}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {/* ── ITINERARY SECTION (Avian Style) ── */}
-            <section className="py-16 md:py-28 bg-[#f9f9f7] pdf-section" id="itinerary">
+            {/* ── ITINERARY SECTION ── */}
+            <section className="py-24 md:py-32 bg-[#F9F9F7] pdf-section" id="itinerary">
                 <div className="container mx-auto px-4 md:px-6">
 
-                    {/* Section header */}
-                    <div className="flex flex-col items-center text-center mb-16 md:mb-24">
-                        <span className="font-handwritten text-4xl text-primary mb-2 block">Detailed</span>
-                        <h2 className="text-4xl md:text-7xl font-serif text-[#111827] uppercase tracking-tight leading-none brush-underline pb-4">
-                            ITINERARY
+                    <div className="flex flex-col items-center text-center mb-20 md:mb-28">
+                        <span className="font-handwritten text-4xl text-primary mb-2 block">Day-by-Day</span>
+                        <h2 className="text-5xl md:text-8xl font-serif text-[#0A1810] uppercase tracking-tighter leading-none brush-underline pb-6">
+                            THE JOURNEY
                         </h2>
                     </div>
 
-                    {/* Day cards — Accordion Style */}
-                    <div className="flex flex-col gap-6 max-w-5xl mx-auto">
+                    <div className="flex flex-col gap-8 max-w-5xl mx-auto">
                         {q.itinerary?.map((day, idx) => {
                             const isOpen = expandedDay === day.day;
-                            const dayLabel = getDayDate(q.travelDates?.from, idx);
+                            const dayDate = getDayDate(q.travelDates?.from, idx);
                             
                             return (
                                 <motion.div
                                     key={day.id || idx}
                                     layout
-                                    initial={{ opacity: 0, y: 20 }}
+                                    initial={{ opacity: 0, y: 30 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
-                                    transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-                                    className={`group relative rounded-[2rem] md:rounded-[3rem] transition-all duration-700 ${
+                                    transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+                                    className={`group relative rounded-[2.5rem] md:rounded-[3.5rem] transition-all duration-700 ${
                                         isOpen 
-                                        ? 'bg-white shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] border-primary/20 scale-[1.01]' 
-                                        : 'bg-white/40 backdrop-blur-sm hover:bg-white border-transparent hover:shadow-3xl hover:-translate-y-1.5'
+                                        ? 'bg-white shadow-2xl border-primary/30' 
+                                        : 'bg-white border-transparent hover:border-gray-200 hover:shadow-xl hover:-translate-y-2'
                                     } border-2 overflow-hidden`}
                                 >
-                                    {/* --- CARD HEADER (CLOSED STATE) --- */}
                                     <button
-                                        onClick={() => {
-                                            setExpandedDay(isOpen ? null : day.day);
-                                            if (!isOpen) {
-                                                setTimeout(() => {
-                                                    document.getElementById(`day-card-${day.day}`)?.scrollIntoView({ 
-                                                        behavior: 'smooth', 
-                                                        block: 'center' 
-                                                    });
-                                                }, 300);
-                                            }
-                                        }}
-                                        id={`day-card-${day.day}`}
-                                        className="w-full text-left p-6 md:p-8 flex items-center justify-between gap-6"
+                                        onClick={() => setExpandedDay(isOpen ? null : day.day)}
+                                        className="w-full text-left p-8 md:p-12 flex items-center justify-between gap-8"
                                     >
-                                        <div className="flex items-center gap-6 md:gap-8 flex-1">
-                                            {/* Day Badge - Avian Style (Grey Box) */}
-                                            <div className="w-16 h-16 md:w-20 md:h-20 bg-[#f5f5f7] rounded-2xl flex flex-col items-center justify-center shrink-0 border border-gray-100 transition-all duration-500 group-hover:bg-primary group-hover:text-white">
-                                                <span className="text-[10px] font-black uppercase tracking-tighter leading-none mb-1 text-[#6B7280]">Day</span>
-                                                <span className="text-2xl md:text-3xl font-serif leading-none text-[#111827] group-hover:text-white">{day.day < 10 ? `0${day.day}` : day.day}</span>
+                                        <div className="flex items-center gap-8 md:gap-12 flex-1">
+                                            <div className={`w-20 h-20 md:w-24 md:h-24 rounded-3xl flex flex-col items-center justify-center shrink-0 border transition-all duration-500 ${
+                                                isOpen ? 'bg-primary border-primary text-white scale-110' : 'bg-gray-50 border-gray-100 text-[#0A1810]'
+                                            }`}>
+                                                <span className="text-[10px] font-black uppercase tracking-tighter leading-none mb-1">Day</span>
+                                                <span className="text-3xl md:text-4xl font-serif leading-none">{day.day}</span>
                                             </div>
 
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-1">
-                                                    {dayLabel && (
-                                                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
-                                                            {dayLabel}
-                                                        </span>
-                                                    )}
+                                                <div className="flex items-center gap-4 mb-2">
+                                                    <span className="text-[11px] font-black text-primary uppercase tracking-[0.3em]">
+                                                        {dayDate || `Phase ${day.day}`}
+                                                    </span>
                                                 </div>
-                                                <h3 className={`text-lg md:text-3xl font-serif tracking-tight transition-colors duration-500 ${
-                                                    isOpen ? 'text-[#111827]' : 'text-[#6B7280]'
+                                                <h3 className={`text-xl md:text-4xl font-serif tracking-tight transition-colors duration-500 ${
+                                                    isOpen ? 'text-[#0A1810]' : 'text-gray-400 group-hover:text-gray-600'
                                                 }`}>
                                                     {day.title}
                                                 </h3>
                                             </div>
                                         </div>
 
-                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-500 ${
-                                            isOpen ? 'bg-primary border-primary text-white rotate-180' : 'border-gray-200 text-gray-300'
+                                        <div className={`w-14 h-14 rounded-full flex items-center justify-center border transition-all duration-500 ${
+                                            isOpen ? 'bg-[#0A1810] border-[#0A1810] text-white rotate-180' : 'border-gray-100 text-gray-300'
                                         }`}>
-                                            <Compass size={20} />
+                                            <ChevronRight size={24} className={isOpen ? 'rotate-90' : ''} />
                                         </div>
                                     </button>
 
-                                    {/* --- EXPANDED CONTENT --- */}
                                     <AnimatePresence>
                                         {isOpen && (
                                             <motion.div
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+                                                transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
                                             >
-                                                <div className="p-6 md:p-8 pt-0 space-y-8">
-                                                    {/* Image Slider inside the card */}
-                                                    <div className="rounded-3xl overflow-hidden shadow-2xl relative aspect-video">
+                                                <div className="p-8 md:p-12 pt-0 space-y-12">
+                                                    <div className="rounded-[2.5rem] overflow-hidden shadow-2xl relative aspect-[16/9] md:aspect-[21/9]">
                                                         <ImageSlider 
                                                             images={day.photos || []} 
-                                                            className="w-full h-full"
+                                                            className="w-full h-full object-cover"
+                                                            autoSlide={true}
+                                                            interval={4000}
+                                                            showDots={true}
                                                         />
-                                                        <div className="absolute top-4 left-4 z-10">
-                                                            <div className="bg-black/40 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl flex items-center gap-2">
-                                                                <Camera size={14} className="text-white" />
-                                                                <span className="text-white font-black text-[10px] uppercase tracking-widest">
-                                                                    View Gallery
-                                                                </span>
-                                                            </div>
-                                                        </div>
                                                     </div>
 
-                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                                                        <div className="lg:col-span-2 space-y-6">
-                                                            <div className="flex items-center gap-3">
-                                                                <Sparkles size={16} className="text-primary" />
-                                                                <h4 className="font-black uppercase tracking-[0.2em] text-xs text-[#111827]">Experience Overview</h4>
+                                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+                                                        <div className="lg:col-span-2 space-y-8">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="h-px w-8 bg-primary" />
+                                                                <h4 className="font-black uppercase tracking-[0.4em] text-xs text-[#0A1810]">Experience Highlights</h4>
                                                             </div>
-                                                            <p className="text-[#4A4A4A] text-base md:text-lg leading-relaxed font-bold">
+                                                            <p className="text-[#1A3022] text-lg md:text-2xl leading-relaxed font-semibold">
                                                                 {day.description}
                                                             </p>
                                                         </div>
 
-                                                        <div className="space-y-6">
-                                                            <div className="flex items-center gap-3">
-                                                                <MapPin size={16} className="text-primary" />
-                                                                <h4 className="font-black uppercase tracking-[0.2em] text-xs text-[#111827]">What&apos;s Included</h4>
+                                                        <div className="space-y-8">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="h-px w-8 bg-primary" />
+                                                                <h4 className="font-black uppercase tracking-[0.4em] text-xs text-[#0A1810]">At a Glance</h4>
                                                             </div>
-                                                            <div className="flex flex-wrap gap-2">
+                                                            <div className="flex flex-wrap gap-3">
                                                                 {day.activities?.map((act, i) => (
-                                                                    <div key={i} className="flex items-center gap-2 bg-gray-50 border border-gray-100 px-4 py-2.5 rounded-xl group/chip hover:bg-primary/5 hover:border-primary/20 transition-all duration-300">
+                                                                    <div key={i} className="flex items-center gap-3 bg-white border border-gray-100 px-5 py-3 rounded-2xl shadow-sm hover:border-primary/20 transition-all">
                                                                         <ActivityIcon label={act} />
-                                                                        <span className="text-[11px] font-black text-[#6B7280] uppercase tracking-widest">{act}</span>
+                                                                        <span className="text-[11px] font-black text-[#4A5D52] uppercase tracking-widest">{act}</span>
                                                                     </div>
                                                                 ))}
                                                                 {day.meals && (
-                                                                    <div className="flex items-center gap-2 bg-primary/5 border border-primary/10 px-4 py-2.5 rounded-xl">
-                                                                        <Utensils size={14} className="text-primary" />
+                                                                    <div className="flex items-center gap-3 bg-primary/5 border border-primary/10 px-5 py-3 rounded-2xl">
+                                                                        <Utensils size={16} className="text-primary" />
                                                                         <span className="text-[11px] font-black text-primary uppercase tracking-widest">{day.meals}</span>
                                                                     </div>
                                                                 )}
@@ -1069,111 +960,221 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                 )}
             </AnimatePresence>
 
-            {/* ── EXPERT SECTION (Avian Style) ── */}
-            <section className="mx-4 md:mx-6 mb-16 md:mb-24 rounded-[3.5rem] overflow-hidden relative pdf-section bg-gray-50/50 border border-gray-100 shadow-sm">
-                <div className="p-10 md:p-20">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-20 items-center">
-                        <div className="lg:col-span-4 flex flex-col items-center">
+            {/* ── STAY OPTIONS SECTION ── */}
+            <section className="py-24 md:py-32 bg-white pdf-section border-t border-gray-50" id="hotels">
+                <div className="container mx-auto px-4 md:px-6 text-center">
+                    <div className="flex flex-col items-center mb-16 md:mb-24">
+                        <span className="font-handwritten text-3xl text-primary mb-2 block">Premium</span>
+                        <h2 className="text-4xl md:text-7xl font-serif text-[#0A1810] uppercase tracking-tighter leading-none brush-underline pb-4">
+                            STAY OPTIONS
+                        </h2>
+                        <p className="mt-6 text-sm md:text-lg text-[#4A5D52] font-bold uppercase tracking-widest max-w-2xl">
+                            Handpicked properties that blend modern comfort with {q.destination.split(',')[0]}&apos;s unique charm.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 max-w-7xl mx-auto">
+                        {(q.selectedHotels || []).length > 0 ? (
+                            q.selectedHotels.map((hotel, i) => (
+                                <motion.div 
+                                    key={i}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: i * 0.1, duration: 0.8 }}
+                                    className="group relative rounded-[3rem] overflow-hidden bg-gray-50 border border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3"
+                                >
+                                    <div className="aspect-[4/3] overflow-hidden relative">
+                                        <img 
+                                            src={hotel.image || hotel.photo || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80'} 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            alt={hotel.name}
+                                        />
+                                        <div className="absolute top-6 left-6 z-10">
+                                            <div className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 text-primary font-black text-[9px] uppercase tracking-widest">
+                                                <Star size={12} className="fill-primary" />
+                                                {hotel.rating || 'Luxury 5★'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-8 md:p-10 space-y-4 text-left">
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">{hotel.location || 'Exquisite Location'}</span>
+                                            <h3 className="text-xl md:text-2xl font-serif text-[#0A1810] uppercase tracking-tight leading-tight">{hotel.name}</h3>
+                                        </div>
+                                        <p className="text-sm text-[#4A5D52] font-semibold leading-relaxed line-clamp-3">
+                                            {hotel.description || 'Experience hospitality redefined with premium amenities and personalized service at the heart of your destination.'}
+                                        </p>
+                                        <div className="flex flex-wrap gap-2 pt-2">
+                                            {['Wifi', 'Breakfast', 'Spa', 'Pool'].slice(0, 3).map((feat, idx) => (
+                                                <div key={idx} className="bg-white border border-gray-100 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase text-[#4A5D52] tracking-widest">
+                                                    {feat}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))
+                        ) : (
+                            [1, 2, 3].map((_, i) => (
+                                <div key={i} className="rounded-[3rem] overflow-hidden bg-gray-50 border border-gray-100 p-2 animate-pulse">
+                                    <div className="aspect-[4/3] bg-gray-200 rounded-[2.5rem]" />
+                                    <div className="p-8 space-y-3">
+                                        <div className="h-2 w-1/4 bg-gray-200 rounded" />
+                                        <div className="h-6 w-3/4 bg-gray-200 rounded" />
+                                        <div className="h-10 w-full bg-gray-200 rounded" />
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </section>
+
+            {/* ── EXPERT SECTION ── */}
+            <section className="mx-4 md:mx-6 mb-16 md:mb-32 rounded-[3.5rem] md:rounded-[5rem] overflow-hidden relative pdf-section bg-[#0A1810] text-white">
+                <div className="p-10 md:p-24 relative z-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 md:gap-24 items-center">
+                        <div className="lg:col-span-5 flex flex-col items-center lg:items-end">
                             <div className="relative group">
-                                <div className="w-48 h-48 md:w-64 md:h-64 rounded-full p-2 border-2 border-primary/20 bg-white shadow-2xl relative z-10 overflow-hidden">
+                                <div className="w-56 h-56 md:w-80 md:h-80 rounded-[4rem] p-4 border-2 border-white/10 bg-white/5 shadow-2xl relative z-10 overflow-hidden backdrop-blur-xl">
                                     <img
                                         src={q.expert?.photo || 'https://images.unsplash.com/photo-1579389083046-e3df9c2b3325?q=80&w=2070&auto=format&fit=crop'}
                                         loading="lazy"
-                                        decoding="async"
-                                        className="w-full h-full rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100"
+                                        className="w-full h-full rounded-[3rem] object-cover transition-all duration-700 group-hover:scale-105"
                                         alt={q.expert?.name || 'Expert'}
                                     />
                                 </div>
-                                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20 bg-white px-6 py-2 rounded-full shadow-xl border border-gray-100">
-                                    <span className="text-[10px] font-black text-[#111827] uppercase tracking-widest whitespace-nowrap">Your Expert Hand</span>
+                                <div className="absolute -bottom-6 -right-6 md:-bottom-10 md:-right-10 z-20 bg-primary px-8 py-4 rounded-[2rem] shadow-2xl border-4 border-[#0A1810]">
+                                    <span className="text-[10px] md:text-sm font-black text-white uppercase tracking-[0.2em] whitespace-nowrap">Your Expert Host</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="lg:col-span-8 flex flex-col items-center lg:items-start text-center lg:text-left gap-8">
-                            <div className="space-y-4">
-                                <span className="font-handwritten text-4xl text-primary">Hey, {q.clientName || 'Traveler'}!</span>
-                                <h3 className="text-3xl sm:text-5xl md:text-7xl font-serif text-[#111827] leading-[0.9] uppercase">
+                        <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left gap-10">
+                            <div className="space-y-6">
+                                <motion.span 
+                                    className="font-handwritten text-4xl md:text-6xl text-primary"
+                                    initial={{ opacity: 0, rotate: -5 }}
+                                    whileInView={{ opacity: 1, rotate: 0 }}
+                                >
+                                    Hey, {q.clientName || 'Traveler'}!
+                                </motion.span>
+                                <h3 className="text-4xl md:text-8xl font-serif leading-[0.85] uppercase tracking-tighter">
                                     I am <span className="text-primary italic">{q.expert?.name}</span>,<br /> 
                                     Your personal host.
                                 </h3>
-                                <p className="text-[#4A4A4A] text-lg md:text-xl font-bold max-w-2xl">
+                                <p className="text-white/60 text-lg md:text-2xl font-medium max-w-2xl leading-relaxed">
                                     I&apos;ve lived and breathed {q.destination.split(',')[0]} for over 8 years. My goal is to ensure every moment of your journey feels like it was written just for you.
                                 </p>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto no-print">
+                            <div className="flex flex-col sm:flex-row gap-6 w-full no-print">
                                 <Button
                                     onClick={() => window.open(`https://wa.me/${(q.expert?.whatsapp || '').replace(/[^0-9]/g, '')}`, '_blank')}
-                                    className="px-10 py-8 bg-gray-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-primary transition-all flex items-center gap-3 h-auto"
+                                    className="px-12 py-10 bg-white text-[#0A1810] rounded-[2rem] text-sm font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-4 h-auto shadow-2xl"
                                 >
-                                    <Sparkles size={16} /> Chat on WhatsApp
+                                    <Sparkles size={18} /> Chat on WhatsApp
                                 </Button>
                             </div>
                         </div>
                     </div>
                 </div>
+                {/* Background Decor */}
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
             </section>
 
-            {/* Simplified Footer */}
-            <footer className="py-20 border-t text-center space-y-8" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
-                <div className="flex flex-col items-center gap-6">
-                    <a href={brand?.websiteLink || "https://www.youthcamping.in/"} target="_blank" rel="noopener noreferrer" className="block">
-                        {brand?.companyLogo ? (
-                            <img 
-                                src={brand.companyLogo} 
-                                alt={brand.companyName || "Company Logo"} 
-                                className={`h-20 md:h-28 w-auto transition-all duration-700 grayscale hover:grayscale-0 opacity-80 hover:opacity-100 ${
-                                    brand.logoMode === 'fill' ? 'object-fill' :
-                                    brand.logoMode === 'cover' ? 'object-cover' :
-                                    'object-contain'
-                                }`}
-                            />
-                        ) : (
-                            <img 
-                                src="/images/logo-vertical.png" 
-                                alt="YouthCamping" 
-                                className="h-24 md:h-32 w-auto object-contain grayscale hover:grayscale-0 transition-all duration-700 opacity-80 hover:opacity-100"
-                            />
-                        )}
-                    </a>
-                    <p className="text-[10px] font-black uppercase tracking-[0.6em] text-[#6B7280]">{brand?.companyName || "YouthCamping"} — Luxury Travel Reimagined</p>
+            {/* ── PREMIUM DARK FOOTER ── */}
+            <footer className="bg-[#0A1810] text-white pt-24 pb-12 overflow-hidden relative">
+                <div className="container mx-auto px-4 md:px-6 relative z-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 md:gap-12 mb-20">
+                        {/* Brand Column */}
+                        <div className="space-y-8 col-span-1 lg:col-span-1">
+                            <a href="https://www.youthcamping.in/" target="_blank" rel="noopener noreferrer" className="block">
+                                <img 
+                                    src="/logo.png" 
+                                    alt="YouthCamping" 
+                                    className="h-16 md:h-20 w-auto object-contain brightness-0 invert" 
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/images/logo-horizontal.png';
+                                    }}
+                                />
+                            </a>
+                            <p className="text-sm font-semibold text-white/40 leading-relaxed uppercase tracking-wider">
+                                Redefining luxury travel with curated experiences and uncompromising quality. One journey at a time.
+                            </p>
+                        </div>
+
+                        {/* Quick Links Column */}
+                        <div className="space-y-8">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Explore</h4>
+                            <ul className="space-y-4">
+                                {['Home', 'Itinerary', 'Stay Options', 'Booking Terms'].map((link, i) => (
+                                    <li key={i}>
+                                        <a href="#" className="text-sm font-bold text-white/60 hover:text-white transition-colors uppercase tracking-widest">{link}</a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Social Column */}
+                        <div className="space-y-8">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Follow Our Journey</h4>
+                            <div className="flex gap-6">
+                                {[
+                                    { icon: <Instagram size={24} />, link: brand?.instagramLink || '#' },
+                                    { icon: <Globe size={24} />, link: brand?.websiteLink || '#' },
+                                    { icon: <Smartphone size={24} />, link: `tel:${brand?.phoneNumber || ''}` }
+                                ].map((social, i) => (
+                                    <a key={i} href={social.link} target="_blank" rel="noopener noreferrer" 
+                                       className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:bg-primary hover:text-white hover:border-primary transition-all duration-300">
+                                        {social.icon}
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Contact Column */}
+                        <div className="space-y-8">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Get In Touch</h4>
+                            <div className="space-y-4">
+                                <p className="text-sm font-bold text-white/60 uppercase tracking-widest leading-relaxed">
+                                    New Delhi, India <br />
+                                    {brand?.phoneNumber || '+91 88000 00000'} <br />
+                                    team@youthcamping.in
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="border-t border-white/10 pt-12 flex flex-col md:flex-row items-center justify-between gap-8">
+                        <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em]">
+                            © {new Date().getFullYear()} {brand?.companyName || "YouthCamping"} Global Luxury. All Rights Reserved.
+                        </p>
+                        <div className="flex gap-8 no-print">
+                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest cursor-pointer hover:text-white transition-colors">Privacy Policy</span>
+                            <span className="text-[9px] font-black text-white/20 uppercase tracking-widest cursor-pointer hover:text-white transition-colors">Terms of Service</span>
+                        </div>
+                    </div>
                 </div>
-                
-                <div className="flex justify-center gap-10 no-print">
-                   {brand?.instagramLink && (
-                       <a href={brand.instagramLink} target="_blank" rel="noopener noreferrer">
-                           <Instagram size={20} className="text-[#6B7280] hover:text-primary transition-colors cursor-pointer" />
-                       </a>
-                   )}
-                   {brand?.websiteLink && (
-                       <a href={brand.websiteLink} target="_blank" rel="noopener noreferrer">
-                           <Globe size={20} className="text-[#6B7280] hover:text-primary transition-colors cursor-pointer" />
-                       </a>
-                   )}
-                   {brand?.phoneNumber && (
-                       <a href={`tel:${brand.phoneNumber}`}>
-                           <Smartphone size={20} className="text-[#6B7280] hover:text-primary transition-colors cursor-pointer" />
-                       </a>
-                   )}
-                </div>
-                
-                <p className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest pt-10 px-4">
-                    {brand?.footerText || `© ${new Date().getFullYear()} ${brand?.companyName || "YouthCamping"} Global Luxury Travel. All Rights Reserved.`}
-                </p>
+                {/* Visual Accent */}
+                <div className="absolute bottom-0 right-0 w-full h-[1px] bg-primary/30" />
             </footer>
 
             {/* ── Sticky Mobile Booking CTA ── */}
-            <div className="fixed bottom-0 left-0 right-0 z-[140] md:hidden no-print px-4 pb-4"
-                style={{ 
-                    background: 'linear-gradient(to top, rgba(255,255,255,0.95) 60%, transparent)',
-                    backdropFilter: 'blur(8px)',
-                    WebkitBackdropFilter: 'blur(8px)'
-                }}>
-                <div className="pt-4">
-                    {renderBookingButton("w-full rounded-2xl font-black uppercase text-sm tracking-widest h-14 shadow-2xl shadow-primary/25")}
+            {!isBooked && (
+                <div className="fixed bottom-0 left-0 right-0 z-[140] md:hidden no-print px-4 pb-4"
+                    style={{ 
+                        background: 'linear-gradient(to top, rgba(10, 24, 16, 1) 40%, transparent)',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)'
+                    }}>
+                    <div className="pt-4">
+                        {renderBookingButton("w-full rounded-[1.5rem] font-black uppercase text-sm tracking-widest h-16 shadow-2xl shadow-primary/30")}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     </div>
 );
