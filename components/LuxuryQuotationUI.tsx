@@ -974,8 +974,8 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 max-w-7xl mx-auto">
-                        {(q.selectedHotels || []).length > 0 ? (
-                            q.selectedHotels.map((hotel, i) => (
+                        {(selectedTier === 'standard' ? q.lowLevelHotels : q.highLevelHotels)?.length > 0 ? (
+                            (selectedTier === 'standard' ? q.lowLevelHotels : q.highLevelHotels).map((hotel, i) => (
                                 <motion.div 
                                     key={i}
                                     initial={{ opacity: 0, y: 30 }}
@@ -986,7 +986,7 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                                 >
                                     <div className="aspect-[4/3] overflow-hidden relative">
                                         <img 
-                                            src={hotel.image || hotel.photo || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80'} 
+                                            src={(hotel as any).image || (hotel as any).photo || (hotel.photos && hotel.photos[0]) || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80'} 
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             alt={hotel.name}
                                         />

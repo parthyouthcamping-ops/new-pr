@@ -329,18 +329,18 @@ ${designation}`;
 
     return (
         <form onSubmit={handleSave} className="max-w-6xl mx-auto pb-20">
-            <div className="flex items-center justify-between mb-12">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 lg:mb-12">
                 <Button
                     type="button"
                     variant="ghost"
                     onClick={() => router.push("/admin")}
-                    className="text-gray-400 font-semibold hover:text-gray-900"
+                    className="text-gray-400 font-semibold hover:text-gray-900 -ml-4"
                 >
                     <ArrowLeft size={20} className="mr-2" /> Back to List
                 </Button>
 
-                <div className="flex items-center gap-4">
-                    <div className="flex gap-2 mr-6">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
+                    <div className="hidden sm:flex gap-2 mr-6">
                         {[1, 2, 3, 4, 5, 6].map(s => (
                             <div
                                 key={s}
@@ -348,34 +348,34 @@ ${designation}`;
                             />
                         ))}
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
                         {isEdit && (
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={handleWhatsAppShare}
-                                className="rounded-2xl border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-200"
+                                className="flex-1 sm:flex-none rounded-2xl border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-200 px-4"
                             >
-                                <WhatsAppIcon size={18} className="mr-2" /> Share via WhatsApp
+                                <WhatsAppIcon size={18} className="sm:mr-2" /> <span className="hidden sm:inline">Share via WhatsApp</span>
                             </Button>
                         )}
                         <Button 
                             type="submit"
                             disabled={isSaving || activeUploads[0] > 0}
-                            className="rounded-2xl shadow-xl shadow-primary/30 min-w-[140px]"
+                            className="flex-1 sm:flex-none rounded-2xl shadow-xl shadow-primary/30 min-w-[140px]"
                         >
                             {isSaving ? (
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center justify-center gap-2">
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Saving...
+                                    <span className="hidden sm:inline">Saving...</span>
                                 </div>
                             ) : activeUploads[0] > 0 ? (
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center justify-center gap-2">
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                    Uploading...
+                                    <span className="hidden sm:inline">Uploading...</span>
                                 </div>
                             ) : (
-                                <><Save size={18} className="mr-2" /> {isEdit ? "Update Proposal" : "Save Proposal"}</>
+                                <><Save size={18} className="mr-2" /> {isEdit ? "Update" : "Save"}</>
                             )}
                         </Button>
                     </div>
@@ -390,7 +390,7 @@ ${designation}`;
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
                 >
-                    <GlassCard className="p-12 mb-12">
+                    <GlassCard className="p-6 lg:p-12 mb-8 lg:mb-12">
                         {step === 1 && (
                             <div className="flex flex-col gap-10">
                                 <div className="flex items-center gap-4 mb-4">
@@ -766,44 +766,44 @@ ${designation}`;
 
                         {step === 4 && (
                             <div className="flex flex-col gap-10">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                                            <Calendar size={28} />
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 lg:mb-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 lg:w-14 lg:h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                                                <Calendar size={24} />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight">Day-Wise Itinerary</h2>
+                                                <p className="text-gray-500 font-medium text-xs lg:text-base">Curate the daily experience.</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h2 className="text-3xl font-black text-gray-900 tracking-tight">Day-Wise Itinerary</h2>
-                                            <p className="text-gray-500 font-medium">Curate the daily experience.</p>
+                                        <div className="flex gap-4">
+                                            <Button variant="outline" onClick={() => {
+                                                const d: DayItinerary = {
+                                                    id: uuidv4(),
+                                                    day: (formData.itinerary?.length || 0) + 1,
+                                                    title: "",
+                                                    description: "",
+                                                    activities: [],
+                                                    photos: []
+                                                };
+                                                setFormData({ ...formData, itinerary: [...(formData.itinerary || []), d] });
+                                            }} className="flex-1 sm:flex-none rounded-2xl border-2 h-12">
+                                                <Plus size={20} className="mr-2" /> Add Day
+                                            </Button>
                                         </div>
                                     </div>
-                                    <div className="flex gap-4">
-                                        <Button variant="outline" onClick={() => {
-                                            const d: DayItinerary = {
-                                                id: uuidv4(),
-                                                day: (formData.itinerary?.length || 0) + 1,
-                                                title: "",
-                                                description: "",
-                                                activities: [],
-                                                photos: []
-                                            };
-                                            setFormData({ ...formData, itinerary: [...(formData.itinerary || []), d] });
-                                        }} className="rounded-2xl border-2">
-                                            <Plus size={20} className="mr-2" /> Add Manual Day
-                                        </Button>
-                                    </div>
-                                </div>
 
                                 <div className="flex flex-col gap-16">
                                     {formData.itinerary?.map((item, index) => (
-                                        <div key={item.id} className="relative group flex gap-10">
-                                            <div className="flex flex-col items-center gap-4 shrink-0">
-                                                <div className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center text-xl font-black italic shadow-lg shadow-primary/30">
+                                        <div key={item.id} className="relative group flex flex-col sm:flex-row gap-6 lg:gap-10">
+                                            <div className="flex sm:flex-col items-center gap-4 shrink-0">
+                                                <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-full bg-primary text-white flex items-center justify-center text-lg lg:text-xl font-black italic shadow-lg shadow-primary/30">
                                                     {item.day}
                                                 </div>
-                                                <div className="w-1 flex-1 bg-gray-50 rounded-full" />
+                                                <div className="h-1 flex-1 sm:w-1 bg-gray-50 rounded-full" />
                                             </div>
 
-                                            <div className="flex-1 space-y-8 bg-gray-50/50 p-10 rounded-[2.5rem] relative">
+                                            <div className="flex-1 space-y-6 lg:space-y-8 bg-gray-50/50 p-6 lg:p-10 rounded-[2rem] lg:rounded-[2.5rem] relative">
                                                 <div className="absolute top-6 right-6">
                                                     <Button variant="ghost" onClick={() => {
                                                         const newItin = [...(formData.itinerary || [])];
@@ -918,8 +918,8 @@ ${designation}`;
                                                             <input id={`itinerary_photo_${index}`} name={`itinerary_photo_${index}`} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'itinerary', true, index)} />
                                                         </div>
                                                     </div>
+                                                </div>
                                             </div>
-                                        </div>
                                     ))}
                                 </div>
                             </div>
@@ -1215,16 +1215,16 @@ ${designation}`;
                 </motion.div>
             </AnimatePresence>
 
-            <div className="flex justify-between">
-                <Button type="button" variant="outline" disabled={step === 1} onClick={prevStep} className="rounded-2xl px-10 border-2">
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
+                <Button type="button" variant="outline" disabled={step === 1} onClick={prevStep} className="w-full sm:w-auto rounded-2xl px-10 border-2 h-14">
                     <ChevronLeft size={20} className="mr-2" /> Previous
                 </Button>
                 {step < totalSteps ? (
-                    <Button type="button" onClick={nextStep} className="rounded-2xl px-10">
+                    <Button type="button" onClick={nextStep} className="w-full sm:w-auto rounded-2xl px-10 h-14">
                         Next Section <ChevronRight size={20} className="ml-2" />
                     </Button>
                 ) : (
-                    <Button type="submit" disabled={isSaving || activeUploads[0] > 0} className="rounded-2xl px-10 shadow-lg shadow-primary/20">
+                    <Button type="submit" disabled={isSaving || activeUploads[0] > 0} className="w-full sm:w-auto rounded-2xl px-10 shadow-lg shadow-primary/20 h-14">
                         {isSaving ? "Saving..." : activeUploads[0] > 0 ? "Uploading..." : <><Save size={20} className="mr-2" /> Save Proposal</>}
                     </Button>
                 )}

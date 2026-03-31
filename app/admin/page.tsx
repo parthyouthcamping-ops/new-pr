@@ -244,20 +244,20 @@ ${expertDesignation}`;
                 </div>
 
                 {/* Dashboard Counters (Quick Stats) */}
-                <div className="flex items-center gap-4">
-                     <div className="flex flex-col items-end">
-                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Bookings</span>
-                         <span className="text-xl font-black text-green-500">{quotations.filter(q => q.bookingStatus === 'booked').length}</span>
+                <div className="grid grid-cols-2 sm:flex sm:items-center gap-4 w-full md:w-auto">
+                     <div className="flex flex-col items-center sm:items-end bg-white p-4 rounded-2xl border border-gray-50 sm:bg-transparent sm:p-0 sm:border-0 grow">
+                         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Bookings</span>
+                         <span className="text-lg sm:text-xl font-black text-green-500">{quotations.filter(q => q.bookingStatus === 'booked').length}</span>
                      </div>
-                     <div className="w-px h-8 bg-gray-200"></div>
-                     <div className="flex flex-col items-center">
-                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Reserved Trips</span>
-                         <span className="text-xl font-black text-blue-500">{quotations.filter(q => q.bookingStatus === 'reserved').length}</span>
+                     <div className="hidden sm:block w-px h-8 bg-gray-200"></div>
+                     <div className="flex flex-col items-center bg-white p-4 rounded-2xl border border-gray-50 sm:bg-transparent sm:p-0 sm:border-0 grow">
+                         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Reserved Trips</span>
+                         <span className="text-lg sm:text-xl font-black text-blue-500">{quotations.filter(q => q.bookingStatus === 'reserved').length}</span>
                      </div>
-                     <div className="w-px h-8 bg-gray-200"></div>
-                     <div className="flex flex-col items-start">
-                         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Pending Quotes</span>
-                         <span className="text-xl font-black text-orange-400">{quotations.filter(q => !q.bookingStatus || q.bookingStatus === 'pending').length}</span>
+                     <div className="hidden sm:block w-px h-8 bg-gray-200"></div>
+                     <div className="flex flex-col items-center sm:items-start bg-white p-4 rounded-2xl border border-gray-50 sm:bg-transparent sm:p-0 sm:border-0 col-span-2 sm:col-auto">
+                         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Pending Quotes</span>
+                         <span className="text-lg sm:text-xl font-black text-orange-400">{quotations.filter(q => !q.bookingStatus || q.bookingStatus === 'pending').length}</span>
                      </div>
                 </div>
             </div>
@@ -419,64 +419,117 @@ ${expertDesignation}`;
                             </div>
                         </GlassCard>
                     ) : (
-                        <div className="bg-white rounded-[2.5rem] border-2 border-white overflow-hidden shadow-xl">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50 border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Customer</th>
-                                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Trip Slug</th>
-                                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Status</th>
-                                        <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {bookings.map((b) => (
-                                        <tr key={b.id} className="hover:bg-gray-50/30 transition-colors group">
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col gap-1">
-                                                    <p className="font-bold text-gray-900">{b.customer_name}</p>
-                                                    <div className="flex items-center gap-4 text-[10px] text-gray-400 font-medium italic">
-                                                        <span className="flex items-center gap-1"><Phone size={10} /> {b.phone}</span>
-                                                        <span className="flex items-center gap-1"><Mail size={10} /> {b.email}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 font-bold text-gray-600 text-sm italic">/{b.trip_slug}</td>
-                                            <td className="px-8 py-6">
-                                                <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest inline-flex items-center gap-2 ${
-                                                    b.status === 'booked' ? 'bg-green-500 text-white' : 
-                                                    b.status === 'cancelled' ? 'bg-red-400 text-white' : 
-                                                    'bg-yellow-500 text-white'
-                                                }`}>
-                                                    {b.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <select
-                                                        value={b.status || 'reserved'}
-                                                        onChange={(e) => updateBookingStatus(b.id, e.target.value)}
-                                                        className="bg-gray-50 border border-gray-100 rounded-lg px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-gray-700 outline-none focus:border-primary transition-colors cursor-pointer"
-                                                    >
-                                                        <option value="pending">Pending</option>
-                                                        <option value="reserved">Reserved</option>
-                                                        <option value="booked">Booked</option>
-                                                        <option value="cancelled">Cancelled</option>
-                                                    </select>
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        className="h-10 rounded-xl text-gray-400 hover:text-red-500 transition-colors"
-                                                        onClick={() => setDeleteBookingId(b.id)}
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </Button>
-                                                </div>
-                                            </td>
+                        <>
+                            {/* Mobile Bookings View */}
+                            <div className="lg:hidden space-y-4">
+                                {bookings.map((b) => (
+                                    <GlassCard key={b.id} className="p-6 space-y-6">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="font-bold text-gray-900 text-lg">{b.customer_name}</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1 italic">/{b.trip_slug}</p>
+                                            </div>
+                                            <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${
+                                                b.status === 'booked' ? 'bg-green-500 text-white' : 
+                                                b.status === 'cancelled' ? 'bg-red-400 text-white' : 
+                                                'bg-yellow-500 text-white'
+                                            }`}>
+                                                {b.status}
+                                            </span>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-2 text-[10px] font-bold text-gray-600">
+                                            <div className="flex items-center gap-2 bg-gray-50/50 p-2 rounded-xl">
+                                                <Phone size={12} className="text-primary" /> {b.phone}
+                                            </div>
+                                            <div className="flex items-center gap-2 bg-gray-50/50 p-2 rounded-xl">
+                                                <Mail size={12} className="text-primary" /> {b.email}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 pt-2">
+                                            <select
+                                                value={b.status || 'reserved'}
+                                                onChange={(e) => updateBookingStatus(b.id, e.target.value)}
+                                                className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest text-gray-700 outline-none focus:border-primary transition-colors cursor-pointer"
+                                            >
+                                                <option value="pending">Pending</option>
+                                                <option value="reserved">Reserved</option>
+                                                <option value="booked">Booked</option>
+                                                <option value="cancelled">Cancelled</option>
+                                            </select>
+                                            <Button 
+                                                variant="ghost" 
+                                                className="w-12 h-12 rounded-xl text-gray-400 hover:text-red-500 transition-colors border border-gray-50"
+                                                onClick={() => setDeleteBookingId(b.id)}
+                                            >
+                                                <Trash2 size={16} />
+                                            </Button>
+                                        </div>
+                                    </GlassCard>
+                                ))}
+                            </div>
+
+                            {/* Desktop Bookings Table */}
+                            <div className="hidden lg:block bg-white rounded-[2.5rem] border-2 border-white overflow-hidden shadow-xl">
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="bg-gray-50/50 border-b border-gray-100">
+                                        <tr>
+                                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Customer</th>
+                                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Trip Slug</th>
+                                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Status</th>
+                                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 text-right">Actions</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {bookings.map((b) => (
+                                            <tr key={b.id} className="hover:bg-gray-50/30 transition-colors group">
+                                                <td className="px-8 py-6">
+                                                    <div className="flex flex-col gap-1">
+                                                        <p className="font-bold text-gray-900">{b.customer_name}</p>
+                                                        <div className="flex items-center gap-4 text-[10px] text-gray-400 font-medium italic">
+                                                            <span className="flex items-center gap-1"><Phone size={10} /> {b.phone}</span>
+                                                            <span className="flex items-center gap-1"><Mail size={10} /> {b.email}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6 font-bold text-gray-600 text-sm italic">/{b.trip_slug}</td>
+                                                <td className="px-8 py-6">
+                                                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest inline-flex items-center gap-2 ${
+                                                        b.status === 'booked' ? 'bg-green-500 text-white' : 
+                                                        b.status === 'cancelled' ? 'bg-red-400 text-white' : 
+                                                        'bg-yellow-500 text-white'
+                                                    }`}>
+                                                        {b.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-6 text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <select
+                                                            value={b.status || 'reserved'}
+                                                            onChange={(e) => updateBookingStatus(b.id, e.target.value)}
+                                                            className="bg-gray-50 border border-gray-100 rounded-lg px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-gray-700 outline-none focus:border-primary transition-colors cursor-pointer"
+                                                        >
+                                                            <option value="pending">Pending</option>
+                                                            <option value="reserved">Reserved</option>
+                                                            <option value="booked">Booked</option>
+                                                            <option value="cancelled">Cancelled</option>
+                                                        </select>
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            className="h-10 rounded-xl text-gray-400 hover:text-red-500 transition-colors"
+                                                            onClick={() => setDeleteBookingId(b.id)}
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
                     )}
                 </div>
             )}

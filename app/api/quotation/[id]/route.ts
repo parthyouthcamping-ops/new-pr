@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getQuotationApiByIdOrSlugSmart } from "@/lib/quotations-smart";
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         if (!id) {
             return NextResponse.json({ error: 'ID/Slug is required' }, { status: 400 });
         }
@@ -29,9 +29,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }

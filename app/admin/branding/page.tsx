@@ -15,7 +15,7 @@ import {
     Type, 
     Palette, 
     Loader2,
-    Building2
+    Building
 } from "lucide-react";
 import { getBrandSettings, saveBrandSettings } from "@/lib/store";
 import { BrandSettings } from "@/lib/types";
@@ -43,13 +43,19 @@ export default function BrandingPage() {
     useEffect(() => {
         const load = async () => {
             try {
+                setLoading(true);
                 const data = await getBrandSettings();
-                if (data) {
-                    setSettings(prev => ({ ...prev, ...data }));
+                console.log("[Branding] Fetched settings:", data);
+                if (data && typeof data === 'object') {
+                    setSettings(prev => ({ 
+                        ...prev, 
+                        ...data,
+                        updatedAt: data.updatedAt || new Date().toISOString()
+                    }));
                 }
             } catch (err) {
-                console.error("Failed to load brand settings:", err);
-                toast.error("Could not fetch brand data.");
+                console.error("[Branding] Failed to load brand settings:", err);
+                toast.error("Using default branding (Fetch failed)");
             } finally {
                 setLoading(false);
             }
@@ -195,7 +201,7 @@ export default function BrandingPage() {
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Company Name</Label>
                                     <div className="relative">
-                                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={18} />
+                                        <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" size={18} />
                                         <Input
                                             className="pl-12 h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white transition-all font-bold"
                                             placeholder="YouthCamping"

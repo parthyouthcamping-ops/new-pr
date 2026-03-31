@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
-import { Plus, LayoutDashboard, FileText, Palette, Hotel, Calendar, UserCheck, Wand2 } from "lucide-react";
+import { Plus, LayoutDashboard, FileText, Palette, Hotel, Calendar, UserCheck, Wand2, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -24,10 +24,47 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: "AI Generator", icon: Wand2, id: "ai-generator", href: "/admin/ai-generator" },
     ];
 
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Close menu when route changes
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [pathname]);
+
     return (
         <div className="flex min-h-screen bg-gray-50/50 font-montserrat">
+            {/* Mobile Top Bar */}
+            <div className="lg:hidden fixed top-0 inset-x-0 h-16 bg-white border-b border-gray-100 px-6 flex items-center justify-between z-40">
+                <div className="flex items-center gap-3">
+                    {brand?.companyLogo ? (
+                        <img src={brand.companyLogo} className="h-6 w-auto object-contain" alt="Logo" />
+                    ) : (
+                        <h1 className="text-xl font-black text-primary tracking-tighter">
+                            YouthCamping
+                        </h1>
+                    )}
+                </div>
+                <button 
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 -mr-2 text-gray-500 hover:text-primary transition-colors"
+                >
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </div>
+
+            {/* Backdrop for mobile */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className="w-80 border-r border-gray-100 bg-white p-8 flex flex-col gap-12 sticky top-0 h-screen">
+            <aside className={cn(
+                "fixed lg:sticky top-0 h-[100dvh] w-80 bg-white border-r border-gray-100 p-8 flex flex-col gap-12 z-50 transition-transform duration-300 overflow-y-auto",
+                isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+            )}>
                 <div className="flex flex-col gap-4">
                     {brand?.companyLogo ? (
                         <img src={brand.companyLogo} className="h-10 w-auto object-contain self-start" alt="Logo" />
@@ -105,19 +142,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-12 overflow-y-auto">
-                <header className="flex justify-between items-center mb-16">
+            <main className="flex-1 w-full lg:min-w-0 pt-24 pb-12 px-6 lg:p-12 overflow-y-auto">
+                <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 mb-8 lg:mb-16">
                     <div>
-                        <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+                        <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
                             Welcome back, Team
                         </h2>
-                        <p className="text-gray-500 font-medium mt-2">
+                        <p className="text-gray-500 font-medium mt-2 text-sm lg:text-base">
                             Generate ultra-luxury travel proposals in seconds.
                         </p>
                     </div>
 
-                    <Link href="/admin/new">
-                        <Button size="lg" className="rounded-2xl px-8">
+                    <Link href="/admin/new" className="w-full sm:w-auto">
+                        <Button size="lg" className="w-full sm:w-auto rounded-2xl px-8 h-12 lg:h-14">
                             <Plus className="mr-2" size={20} />
                             New Proposal
                         </Button>
