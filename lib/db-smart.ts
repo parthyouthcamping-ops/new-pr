@@ -17,7 +17,6 @@ const getNeonSql = () => {
  * SMART GET: Tries Supabase first, falls back to Neon.
  */
 export async function getQuotationSmart(idOrSlug: string) {
-    // 1. Try Supabase
     if (hasSupabase()) {
         try {
             const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(idOrSlug);
@@ -27,92 +26,158 @@ export async function getQuotationSmart(idOrSlug: string) {
                 : await query.eq('slug', idOrSlug).maybeSingle();
 
             if (data && !error) {
-                console.log(`[db-smart] Found quotation in Supabase: ${idOrSlug}`);
                 return mergeItinerary(data);
             }
         } catch (e) {
-            console.warn(`[db-smart] Supabase fetch failed for ${idOrSlug}:`, e);
+            console.warn(`[db-smart] Supabase fetch failed for ${idOrSlug}`);
         }
     }
 
-    // 2. Try Neon Fallback
     const sql = getNeonSql();
     if (sql) {
         try {
-            const rows = await sql`SELECT * FROM quotations WHERE id = ${idOrSlug} OR slug = ${idOrSlug} LIMIT 1`;
-            if (rows.length > 0) {
-                console.log(`[db-smart] Found quotation in Neon: ${idOrSlug}`);
-                return mergeItinerary(rows[0]);
-            }
+            const rows = await sql`SELECT * FROM quotations WHERE id::text = ${idOrSlug} OR slug = ${idOrSlug} LIMIT 1`;
+            if (rows.length > 0) return mergeItinerary(rows[0]);
         } catch (e) {
-            console.warn(`[db-smart] Neon fetch failed for ${idOrSlug}:`, e);
+            console.warn(`[db-smart] Neon fetch failed for ${idOrSlug}`);
         }
     }
-
     return null;
 }
 
 /**
- * SMART GET BRANDING: Tries Supabase, falls back to Neon.
+ * SMART GET ALL: Tries Supabase, falls back to Neon or merges? 
+ * For now, mostly Supabase as it's the primary.
+ */
+export async function getAllQuotationsSmart() {
+    if (hasSupabase()) {
+        try {
+            const { data, error } = await supabase
+                .from('quotations')
+                .select('id, slug, itinerary, created_at, trip_name, price')
+                .order('created_at', { ascending: false });
+            if (!error && data) return data.map(mergeItinerary);
+        } catch (e) {
+            console.warn(`[db-smart] Supabase getAll failed`);
+        }
+    }
+
+    const sql = getNeonSql();
+    if (sql) {
+        try {
+            const rows = await sql`SELECT id, slug, itinerary, created_at, trip_name, price FROM quotations ORDER BY created_at DESC`;
+            return rows.map(mergeItinerary);
+        } catch (e) {
+            console.warn(`[db-smart] Neon getAll failed`);
+        }
+    }
+    return [];
+}
+
+/**
+ * SMART SAVE QUOTATION: Saves to Supabase primarily.
+ */
+export async function saveQuotationSmart(id: string, slug: string, data: any) {
+    let success = false;
+    const cleanData = sanitizePayload(data);
+    const tripName = cleanData?.destination || 'New Trip';
+    const price = cleanData?.highLevelPrice || 0;
+    const createdAt = cleanData?.createdAt || new Date().toISOString();
+
+    if (hasSupabase()) {
+        try {
+            const { error } = await supabase.from('quotations').upsert({
+                id,
+                slug,
+                itinerary: cleanData,
+                trip_name: tripName,
+                price: price,
+                created_at: createdAt
+            });
+            if (!error) success = true;
+            else if (error.code === '23505') throw new Error(`Slug '${slug}' already exists`);
+        } catch (e: any) {
+            if (e.message.includes('already exists')) throw e;
+            console.error(`[db-smart] Supabase save error:`, e.message);
+        }
+    }
+
+    const sql = getNeonSql();
+    if (sql && !success) { // Fallback to Neon if Supabase failed (except for duplicate slug)
+        try {
+            await sql`
+                INSERT INTO quotations (id, slug, itinerary, trip_name, price, created_at)
+                VALUES (${id}, ${slug}, ${cleanData}, ${tripName}, ${price}, ${createdAt})
+                ON CONFLICT (id) DO UPDATE SET 
+                    slug = EXCLUDED.slug, 
+                    itinerary = EXCLUDED.itinerary, 
+                    trip_name = EXCLUDED.trip_name, 
+                    price = EXCLUDED.price
+            `;
+            success = true;
+        } catch (e) {
+            console.error(`[db-smart] Neon save error:`, e);
+        }
+    }
+
+    return { success };
+}
+
+/**
+ * SMART DELETE
+ */
+export async function deleteQuotationSmart(id: string) {
+    if (hasSupabase()) {
+        await supabase.from('quotations').delete().eq('id', id);
+    }
+    const sql = getNeonSql();
+    if (sql) {
+        await sql`DELETE FROM quotations WHERE id::text = ${id}`;
+    }
+    return { success: true };
+}
+
+/**
+ * SMART GET BRANDING
  */
 export async function getBrandSettingsSmart() {
     if (hasSupabase()) {
         try {
             const { data, error } = await supabase.from('brand_settings').select('data').eq('id', 'global_brand').maybeSingle();
             if (data && !error) return data.data;
-        } catch (e) {
-             console.warn(`[db-smart] Supabase brand fetch failed, trying Neon...`);
-        }
+        } catch (e) {}
     }
 
     const sql = getNeonSql();
     if (sql) {
-        try {
-            const rows = await sql`SELECT data FROM brand_settings WHERE id = 'global_brand' LIMIT 1`;
-            if (rows.length > 0) return rows[0].data;
-        } catch (e) {
-            console.warn(`[db-smart] Neon brand fetch failed:`, e);
-        }
+        const rows = await sql`SELECT data FROM brand_settings WHERE id = 'global_brand' LIMIT 1`;
+        if (rows.length > 0) return rows[0].data;
     }
     return null;
 }
 
 /**
- * SMART SET BRANDING: Saves to BOTH if possible, ensuring consistency.
+ * SMART SAVE BRANDING
  */
 export async function saveBrandSettingsSmart(settings: any) {
-    let success = false;
-
     if (hasSupabase()) {
         try {
-            const { error } = await supabase.from('brand_settings').upsert({
+            await supabase.from('brand_settings').upsert({
                 id: 'global_brand',
                 data: settings,
                 updated_at: new Date().toISOString()
             });
-            if (!error) success = true;
-            else console.error(`[db-smart] Supabase brand save error:`, error.message);
-        } catch (e) {
-            console.error(`[db-smart] Supabase brand save exception:`, e);
-        }
+        } catch (e) {}
     }
 
     const sql = getNeonSql();
     if (sql) {
-        try {
-            // Check if table exists in Neon first? Or just try upsert.
-            await sql`
-                INSERT INTO brand_settings (id, data, updated_at)
-                VALUES ('global_brand', ${settings}, NOW())
-                ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
-            `;
-            success = true;
-        } catch (e) {
-            console.error(`[db-smart] Neon brand save exception:`, e);
-        }
+        await sql`
+            INSERT INTO brand_settings (id, data, updated_at)
+            VALUES ('global_brand', ${settings}, NOW())
+            ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
+        `;
     }
-
-    if (!success) throw new Error("Failed to save branding settings to any database.");
     return { success: true };
 }
 
@@ -121,9 +186,16 @@ function mergeItinerary(record: any) {
     const itinerary = typeof record.itinerary === 'string' ? JSON.parse(record.itinerary) : record.itinerary;
     return {
         ...itinerary,
-        ...record,
-        itinerary: itinerary, // Keep the raw itinerary object if needed
+        id: record.id,
+        slug: record.slug,
         createdAt: record.created_at || record.createdAt,
-        updatedAt: record.updated_at || record.updatedAt,
     };
+}
+
+function sanitizePayload(data: any): any {
+    if (!data || typeof data !== 'object') return data;
+    return JSON.parse(JSON.stringify(data, (_key, value) => {
+        if (value instanceof File || value instanceof Blob) return undefined;
+        return value;
+    }));
 }

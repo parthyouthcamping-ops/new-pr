@@ -1,10 +1,8 @@
-import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { v4 as uuidv4 } from 'uuid';
 
-/**
- * Slugify a string: "Trip Name" -> "trip-name"
- */
+import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
+import { saveQuotationSmart } from '@/lib/db-smart';
+
 function slugify(text: string) {
     return text
         .toLowerCase()
@@ -12,9 +10,6 @@ function slugify(text: string) {
         .replace(/ +/g, '-');
 }
 
-/**
- * Generate a random 6-character alphanumeric string
- */
 function generateRandomString(length: number = 6) {
     return Math.random().toString(36).substring(2, 2 + length);
 }
@@ -26,40 +21,33 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { trip_name, price, itinerary, clientName, destination } = body;
 
-        // Use trip_name or clientName/destination if provided
         const finalTripName = trip_name || `${destination || 'Trip'} for ${clientName || 'Valued Client'}`;
 
         if (!finalTripName || !price || !itinerary) {
-            console.warn('[API/QUOTATION/CREATE] Missing fields:', { finalTripName, price, hasItinerary: !!itinerary });
-            return NextResponse.json({ error: 'Missing required fields (trip_name, price, itinerary)' }, { status: 400 });
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Generate slug: trip-name-randomString
         const randomStr = generateRandomString();
         const slug = `${slugify(finalTripName)}-${randomStr}`;
         const id = uuidv4();
 
-        console.log('[API/QUOTATION/CREATE] Inserting quotation:', { id, slug, finalTripName });
+        console.log('[API/QUOTATION/CREATE] Saving smartly:', { id, slug });
 
-        // Insert using Supabase Client
-        const { error } = await supabase.from('quotations').insert({
-            id,
-            slug,
+        const result = await saveQuotationSmart(id, slug, {
+            ...body,
             trip_name: finalTripName,
-            price,
-            itinerary,
-            created_at: new Date().toISOString()
+            price: price,
+            itinerary: itinerary,
+            createdAt: new Date().toISOString()
         });
 
-        if (error) {
-            throw error;
+        if (!result.success) {
+            throw new Error('Fallback save failed');
         }
 
         const protocol = request.headers.get('x-forwarded-proto') || 'http';
         const host = request.headers.get('host');
         const fullLink = `${protocol}://${host}/quotation/${slug}`;
-
-        console.log('[API/QUOTATION/CREATE] Quotation saved successfully:', { slug });
 
         return NextResponse.json({
             success: true,
@@ -70,9 +58,9 @@ export async function POST(request: Request) {
         });
 
     } catch (error: any) {
-        console.error('[API/QUOTATION/CREATE] UNCAUGHT ERROR:', error.message, error.stack);
+        console.error('[API/QUOTATION/CREATE] ERROR:', error.message);
         return NextResponse.json({ 
-            error: 'Database save failed', 
+            error: 'Save failed', 
             details: error.message,
             success: false
         }, { status: 500 });

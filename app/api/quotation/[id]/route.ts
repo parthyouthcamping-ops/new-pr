@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { getQuotationSmart } from "@/lib/db-smart";
+import { getQuotationSmart, deleteQuotationSmart } from "@/lib/db-smart";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -15,12 +15,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         if (!quoteData) {
             console.error(`[API /api/quotation/${id}] Not found`);
             return NextResponse.json({ error: 'Quotation not found' }, { status: 404 });
-        }
-
-        // Defensive: ensure required fields
-        if (!quoteData.id || !quoteData.slug) {
-            console.error(`[API /api/quotation/${id}] Malformed data:`, quoteData);
-            return NextResponse.json({ error: 'Malformed quotation data' }, { status: 500 });
         }
 
         return NextResponse.json(quoteData);
@@ -37,11 +31,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        // DELETE: We just try Supabase directly as most new work is there
-        const { error } = await supabase.from('quotations').delete().eq('id', id);
-        if (error) throw error;
-
-        return NextResponse.json({ success: true, message: 'Quotation deleted successfully' });
+        const res = await deleteQuotationSmart(id);
+        return NextResponse.json(res);
     } catch (error: any) {
         console.error(`[API /api/quotation] DELETE ERROR:`, error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });
