@@ -449,27 +449,7 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                             </div>
                         </div>
 
-                        {/* Glassmorphism Panel */}
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.5, duration: 0.8 }}
-                            className="glass-panel-dark mx-auto max-w-3xl p-8 md:p-12 rounded-[3.5rem] border border-white/10 backdrop-blur-3xl shadow-2xl space-y-8 bg-black/40"
-                        >
-                            <p className="text-sm md:text-xl font-bold text-white leading-relaxed uppercase tracking-widest">
-                                {q.duration} of handpicked experiences, luxury stays, and seamless discovery in the heart of {q.destination}.
-                            </p>
-                            
-                            <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
-                                {renderBookingButton("h-16 px-12 bg-primary text-white hover:bg-primary-deep rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/40 transition-all hover:scale-105 w-full sm:w-auto")}
-                                <Button 
-                                    onClick={() => window.open(`https://wa.me/${(q.expert?.whatsapp || '').replace(/[^0-9]/g, '')}`, '_blank')}
-                                    className="h-16 px-12 bg-white text-black hover:bg-gray-200 rounded-2xl font-black uppercase tracking-widest transition-all hover:scale-105 w-full sm:w-auto"
-                                >
-                                    WhatsApp Expert
-                                </Button>
-                            </div>
-                        </motion.div>
+                        {/* Glassmorphism Panel Removed as requested */}
 
                         <motion.div 
                             animate={{ y: [0, 15, 0] }}
