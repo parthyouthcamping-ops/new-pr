@@ -116,27 +116,8 @@ export async function POST(request: Request) {
 
         if (insertError) throw insertError;
 
-        // Update Quotation to pending
-        try {
-            const res = await fetch(`${new URL(request.url).origin}/api/db`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'getAll' })
-            });
-            if (res.ok) {
-                const qs: any[] = await res.json();
-                const q = qs.find((q: any) => q.slug === tripSlug);
-                if (q && q.bookingStatus !== 'booked' && q.bookingStatus !== 'reserved') {
-                    q.bookingStatus = 'pending';
-                    q.updatedAt = new Date().toISOString();
-                    await fetch(`${new URL(request.url).origin}/api/db`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'set', id: q.id, slug: q.slug, data: q })
-                    });
-                }
-            }
-        } catch (e) { console.error('Error updating quotation status to pending'); }
+        // Note: Automatic quotation status update to 'pending' removed as requested.
+        // Status should be updated manually via admin action.
 
         return NextResponse.json(result ? result[0] : { success: true });
     } catch (error: any) {

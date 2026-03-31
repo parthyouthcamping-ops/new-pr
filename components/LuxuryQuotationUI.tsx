@@ -142,6 +142,44 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
         }
     };
 
+    const handleConfirmBooking = () => {
+        if (isBooked || isReserved || isPending) return;
+
+        const travelerName = q.clientName || "Guest";
+        const destination = q.destination;
+        
+        // Format dates nicely
+        let dateStr = 'Flexible Dates';
+        if (q.travelDates?.from) {
+            const fromDate = new Date(q.travelDates.from).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            const toDate = q.travelDates.to ? new Date(q.travelDates.to).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
+            dateStr = fromDate + (toDate ? ` - ${toDate}` : '');
+        }
+
+        const expertPhone = (q.expert?.whatsapp || '').replace(/[^0-9]/g, '');
+        if (!expertPhone) {
+            toast.error("Expert WhatsApp number is not configured.");
+            return;
+        }
+
+        // Construct a premium pre-filled message for immediate conversion
+        const message = `Hi ${q.expert?.name || 'Travel Expert'},\n\n` +
+                        `I'd like to *Confirm my Booking* for the trip to *${destination}*.\n\n` +
+                        `*Traveler Details:*\n` +
+                        `• Name: ${travelerName}\n` +
+                        `• Destination: ${destination}\n` +
+                        `• Dates: ${dateStr}\n\n` +
+                        `Please guide me with the next steps for payment and confirmation. Thanks!`;
+
+        // Update UI state to show it's requested / pending
+        setBooking({ status: 'pending' });
+        // syncQuotationStatus('pending'); // Removal of auto-save as requested
+        
+        toast.success("Opening WhatsApp to confirm your booking...");
+        
+        window.open(`https://wa.me/${expertPhone}?text=${encodeURIComponent(message)}`, '_blank');
+    };
+
     const handleBook = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isSubmitting || isBooked || isReserved || isPending) return; // prevent duplicate submissions
@@ -166,7 +204,7 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                 setBooking({ ...data, status: 'pending' });
                 setIsBookingModalOpen(false);
                 // Also patch the quotation document so admin dashboard stays accurate
-                await syncQuotationStatus('pending');
+                // await syncQuotationStatus('pending'); // Removal of auto-save as requested
                 toast.success("Booking request submitted! Redirecting to WhatsApp…");
                 
                 // WhatsApp redirection with rich pre-filled message
@@ -237,7 +275,7 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
 
         return (
             <Button 
-                onClick={() => setIsBookingModalOpen(true)}
+                onClick={handleConfirmBooking}
                 disabled={isSubmitting}
                 className={className}
             >
@@ -1057,7 +1095,7 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
 
                             <div className="flex flex-col sm:flex-row gap-6 w-full no-print">
                                 <Button
-                                    onClick={() => window.open(`https://wa.me/${(q.expert?.whatsapp || '').replace(/[^0-9]/g, '')}`, '_blank')}
+                                    onClick={handleConfirmBooking}
                                     className="px-12 py-10 bg-white text-[#0A1810] rounded-[2rem] text-sm font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-4 h-auto shadow-2xl"
                                 >
                                     <Sparkles size={18} /> Chat on WhatsApp
