@@ -331,27 +331,31 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
             `}</style>
 
             {/* Status Banner — driven by liveStatus for instant UI sync */}
-            {isBooked && (
-                <div className="bg-green-500 text-white w-full text-center py-3 px-4 font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-md z-[200] relative">
-                    <CheckCircle2 size={16} className="inline mr-2 -mt-1" />
-                    Booking Confirmed — This trip is booked!
-                </div>
-            )}
-            {isReserved && !isBooked && (
-                <div className="bg-blue-500 text-white w-full text-center py-3 px-4 font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-md z-[200] relative">
-                    <Check size={16} className="inline mr-2 -mt-1" />
-                    Trip Reserved — Awaiting Confirmation
-                </div>
-            )}
-            {isPending && !isBooked && !isReserved && (
-                <div className="bg-yellow-500 text-white w-full text-center py-3 px-4 font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-md z-[200] relative">
-                    <Loader2 size={16} className="inline mr-2 -mt-1 animate-spin" />
-                    Booking Requested — Our expert will reach out shortly!
-                </div>
+            {liveStatus && liveStatus !== 'none' && (
+                <>
+                    {isBooked && (
+                        <div className="bg-green-500 text-white w-full text-center py-3 px-4 font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-md z-[200] relative">
+                            <CheckCircle2 size={16} className="inline mr-2 -mt-1" />
+                            Booking Confirmed — This trip is booked!
+                        </div>
+                    )}
+                    {isReserved && !isBooked && (
+                        <div className="bg-blue-500 text-white w-full text-center py-3 px-4 font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-md z-[200] relative">
+                            <Check size={16} className="inline mr-2 -mt-1" />
+                            Trip Reserved — Awaiting Confirmation
+                        </div>
+                    )}
+                    {isPending && !isBooked && !isReserved && (
+                        <div className="bg-yellow-500 text-white w-full text-center py-3 px-4 font-black uppercase tracking-[0.2em] text-xs md:text-sm shadow-md z-[200] relative">
+                            <Loader2 size={16} className="inline mr-2 -mt-1 animate-spin" />
+                            Booking Requested — Our expert will reach out shortly!
+                        </div>
+                    )}
+                </>
             )}
 
             {/* ── NAVBAR — Glass blur ── */}
-            <header className="sticky top-0 left-0 right-0 z-[100] h-20 md:h-[90px] flex items-center transition-all duration-300 no-print"
+            <header className="sticky top-0 left-0 right-0 z-[100] h-24 md:h-[110px] flex items-center transition-all duration-300 no-print"
                 style={{
                     background: 'rgba(255,255,255,0.82)',
                     backdropFilter: 'blur(20px)',
@@ -369,22 +373,24 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                         >
                             <img 
                                 src={brand?.companyLogo || "/logo.png"} 
-                                className="h-10 md:h-14 w-auto object-contain drop-shadow-sm transition-all duration-500"
-                                alt="" 
+                                className="h-14 md:h-20 w-auto object-contain drop-shadow-sm transition-all duration-500"
+                                alt={brand?.companyName || "Logo"} 
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).src = "/logo.png";
                                 }}
                             />
                         </a>
                         {/* Status pill reads liveStatus — updates immediately after booking */}
-                        <div className={`hidden sm:flex px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white shadow-sm transition-colors duration-500 ${
-                            liveStatus === 'booked'   ? 'bg-green-500'  :
-                            liveStatus === 'reserved' ? 'bg-blue-500'   :
-                            liveStatus === 'pending'  ? 'bg-yellow-500' :
-                            liveStatus === 'cancelled'? 'bg-red-500'    : 'bg-orange-400'
-                        }`}>
-                            {liveStatus}
-                        </div>
+                        {liveStatus && liveStatus !== 'none' && (
+                            <div className={`hidden sm:flex px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white shadow-sm transition-colors duration-500 ${
+                                liveStatus === 'booked'   ? 'bg-green-500'  :
+                                liveStatus === 'reserved' ? 'bg-blue-500'   :
+                                liveStatus === 'pending'  ? 'bg-yellow-500' :
+                                liveStatus === 'cancelled'? 'bg-red-500'    : 'bg-orange-400'
+                            }`}>
+                                {liveStatus}
+                            </div>
+                        )}
                     </div>
                     <div className="flex items-center gap-3">
                         {renderBookingButton("rounded-xl font-black uppercase text-[8px] md:text-[10px] tracking-widest shadow-xl shadow-primary/20 h-10 md:h-12 px-4 md:px-8")}
@@ -808,13 +814,13 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                                 </div>
                                 <div className="space-y-1 border-b pb-5 border-gray-100">
                                     <h4 className="text-xl font-black text-primary uppercase leading-tight">Payment Policy</h4>
-                                    <p className="text-xs font-bold uppercase tracking-widest text-[#6B7280]">Transparent pricing, always</p>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-[#6B7280]">{q.paymentPolicy || 'Transparent pricing, always'}</p>
                                 </div>
                                 <div className="space-y-5">
                                     {[
-                                        { label: 'Booking Amount', value: '₹10,000 / Person', highlight: true },
+                                        { label: 'Booking Amount', value: q.bookingAmount || '₹10,000 / Person', highlight: true },
                                         { label: 'Confirmation', value: 'Instant', highlight: false },
-                                        { label: 'Cancellation', value: 'Full Refund (T&C)', highlight: false },
+                                        { label: 'Cancellation', value: q.cancellationPolicy || 'Full Refund (T&C)', highlight: false },
                                     ].map((row, i) => (
                                         <div key={i} className="flex justify-between items-center text-sm py-1"
                                             style={{ borderBottom: i < 2 ? '1px solid rgba(0,0,0,0.03)' : 'none', paddingBottom: i < 2 ? '1.25rem' : 0 }}>
@@ -1073,11 +1079,11 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                         <div className="space-y-8 col-span-1 lg:col-span-1">
                             <a href="https://www.youthcamping.in/" target="_blank" rel="noopener noreferrer" className="block">
                                 <img 
-                                    src="/logo.png" 
-                                    alt="YouthCamping" 
+                                    src={brand?.companyLogo || "/logo.png"} 
+                                    alt={brand?.companyName || "YouthCamping"} 
                                     className="h-16 md:h-20 w-auto object-contain brightness-0 invert" 
                                     onError={(e) => {
-                                        (e.target as HTMLImageElement).src = '/images/logo-horizontal.png';
+                                        (e.target as HTMLImageElement).src = '/logo.png';
                                     }}
                                 />
                             </a>

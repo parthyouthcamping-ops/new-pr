@@ -185,6 +185,9 @@ ${designation}`;
                 })),
                 lowLevelPrice: safeNumber(formData.lowLevelPrice),
                 highLevelPrice: safeNumber(formData.highLevelPrice),
+                paymentPolicy: formData.paymentPolicy,
+                bookingAmount: formData.bookingAmount,
+                cancellationPolicy: formData.cancellationPolicy,
                 // `packagePrice` exists in the Quotation type; keep it compatible with legacy displays.
                 packagePrice: safeNumber((formData as any).packagePrice ?? formData.highLevelPrice),
                 expert: formData.expert
@@ -1153,12 +1156,29 @@ ${designation}`;
                                         <Users size={28} />
                                     </div>
                                     <div>
-                                        <h2 className="text-3xl font-black text-gray-900 tracking-tight">Final Details & Payments</h2>
-                                        <p className="text-gray-500 font-medium">Verify everything before saving.</p>
+                                        <h2 className="text-3xl font-black text-gray-900 tracking-tight">Final Details & Status</h2>
+                                        <p className="text-gray-500 font-medium">Define the status and final terms.</p>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                    <div className="space-y-4">
+                                        <Label htmlFor="status" className="font-semibold text-primary">Quotation Status</Label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {["none", "Draft", "Sent", "Pending", "Reserved", "Booked", "Cancelled"].map(s => (
+                                                <button
+                                                    key={s}
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, status: s as any })}
+                                                    className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border-2 ${formData.status === s ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-gray-50 border-transparent text-gray-400 hover:border-gray-200'}`}
+                                                >
+                                                    {s}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className="text-[10px] text-gray-400 font-medium mt-1">Select &quot;none&quot; to hide all status banners on the quotation page.</p>
+                                    </div>
+
                                     <div className="space-y-4">
                                         <Label htmlFor="transportOption" className="font-semibold">Transport Mode</Label>
                                         <div className="relative group/transport">
@@ -1207,6 +1227,39 @@ ${designation}`;
                                             onChange={(e) => setFormData({ ...formData, exclusions: e.target.value.split('\n') })}
                                             className="min-h-[150px]"
                                         />
+                                    </div>
+
+                                    <div className="space-y-4 md:col-span-2 border-t pt-8 mt-4">
+                                        <h3 className="text-xl font-black text-gray-900 tracking-tight">Payment & Policies</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-3">
+                                                <Label htmlFor="bookingAmount" className="font-semibold text-primary">Booking Amount</Label>
+                                                <Input
+                                                    id="bookingAmount"
+                                                    placeholder="e.g. ₹15,000 / Person"
+                                                    value={formData.bookingAmount || ""}
+                                                    onChange={(e) => setFormData({ ...formData, bookingAmount: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-3">
+                                                <Label htmlFor="paymentPolicy" className="font-semibold text-primary">Payment Policy (One line)</Label>
+                                                <Input
+                                                    id="paymentPolicy"
+                                                    placeholder="e.g. 50% on booking, balance 15 days before travel"
+                                                    value={formData.paymentPolicy || ""}
+                                                    onChange={(e) => setFormData({ ...formData, paymentPolicy: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-3 md:col-span-2">
+                                                <Label htmlFor="cancellationPolicy" className="font-semibold text-primary">Cancellation Policy</Label>
+                                                <Input
+                                                    id="cancellationPolicy"
+                                                    placeholder="e.g. Full Refund if cancelled within 48 hours"
+                                                    value={formData.cancellationPolicy || ""}
+                                                    onChange={(e) => setFormData({ ...formData, cancellationPolicy: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

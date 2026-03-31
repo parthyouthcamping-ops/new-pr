@@ -85,6 +85,11 @@ export type Quotation = {
         description: string;
     }[];
 
+    // Payment & Policy
+    paymentPolicy?: string;
+    bookingAmount?: string;
+    cancellationPolicy?: string;
+
     // Expert
     expert: {
         name: string;
@@ -93,8 +98,8 @@ export type Quotation = {
         designation?: string;
     };
 
-    status: "Draft" | "Published";
-    bookingStatus?: "pending" | "reserved" | "booked" | "cancelled" | "sent";
+    status: "Draft" | "Published" | "Sent" | "Pending" | "Reserved" | "Booked" | "Cancelled" | "none";
+    bookingStatus?: "pending" | "reserved" | "booked" | "cancelled" | "sent" | "none";
     isBooked?: boolean;
     isReserved?: boolean;
     createdAt: string;
