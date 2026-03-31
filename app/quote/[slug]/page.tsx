@@ -9,11 +9,15 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
     const { slug } = await params;
     let data = null;
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/quotation/${slug}`);
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+        const res = await fetch(`${baseUrl}/api/quotation/${slug}`, {
+            next: { revalidate: 0 }
+        });
+        
         if (res.ok) {
             data = await res.json();
         } else {
-            console.error(`[quote/${slug}] API error:`, res.status, await res.text());
+            console.error(`[quote/${slug}] API error:`, res.status);
         }
     } catch (e) {
         console.error(`[quote/${slug}] Fetch error:`, e);

@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { getQuotationApiByIdOrSlugSmart } from "@/lib/quotations-smart";
+import { getQuotationSmart } from "@/lib/db-smart";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -9,22 +9,23 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         if (!id) {
             return NextResponse.json({ error: 'ID/Slug is required' }, { status: 400 });
         }
-        const quoteData = await getQuotationApiByIdOrSlugSmart(id);
+        
+        const quoteData = await getQuotationSmart(id);
 
         if (!quoteData) {
-            console.error(`[API] Quotation not found for id/slug:`, id);
+            console.error(`[API /api/quotation/${id}] Not found`);
             return NextResponse.json({ error: 'Quotation not found' }, { status: 404 });
         }
 
         // Defensive: ensure required fields
         if (!quoteData.id || !quoteData.slug) {
-            console.error(`[API] Quotation missing required fields:`, quoteData);
+            console.error(`[API /api/quotation/${id}] Malformed data:`, quoteData);
             return NextResponse.json({ error: 'Malformed quotation data' }, { status: 500 });
         }
 
         return NextResponse.json(quoteData);
     } catch (error: any) {
-        console.error('[FETCH QUOTATION ERROR]:', error);
+        console.error(`[API /api/quotation] ERROR:`, error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
@@ -36,12 +37,13 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
+        // DELETE: We just try Supabase directly as most new work is there
         const { error } = await supabase.from('quotations').delete().eq('id', id);
         if (error) throw error;
 
         return NextResponse.json({ success: true, message: 'Quotation deleted successfully' });
     } catch (error: any) {
-        console.error('[DELETE QUOTATION ERROR]:', error);
+        console.error(`[API /api/quotation] DELETE ERROR:`, error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

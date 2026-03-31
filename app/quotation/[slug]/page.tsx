@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import LuxuryQuotationUI from "@/components/LuxuryQuotationUI";
-import { getQuotationBySlugSmart } from "@/lib/quotations-smart";
+import { getQuotationSmart } from "@/lib/db-smart";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -11,13 +11,13 @@ export default async function QuotationPage({
     params: Promise<{ slug: string }> 
 }) {
     const { slug } = await params;
-    console.log(`[quotation/${slug}] Fetching from DB...`);
+    console.log(`[quotation/${slug}] Fetching smartly...`);
 
     let data: any = null;
     try {
-        data = await getQuotationBySlugSmart(slug);
+        data = await getQuotationSmart(slug);
     } catch (error: any) {
-        console.error(`[quotation/${slug}] DB Exception:`, error.message);
+        console.error(`[quotation/${slug}] Exception:`, error.message);
     }
 
     if (!data) {
@@ -25,5 +25,5 @@ export default async function QuotationPage({
         return notFound();
     }
 
-    return <LuxuryQuotationUI q={data as any} />;
+    return <LuxuryQuotationUI q={data} />;
 }
