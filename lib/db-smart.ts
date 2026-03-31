@@ -17,31 +17,46 @@ const getNeonSql = () => {
  * SMART GET: Tries Supabase first, falls back to Neon.
  */
 export async function getQuotationSmart(idOrSlug: string) {
+    console.log(`[db-smart] Searching for quotation: "${idOrSlug}"`);
+    
     if (hasSupabase()) {
         try {
-            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(idOrSlug);
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
             const query = supabase.from('quotations').select('*');
-            const { data, error } = isUUID 
-                ? await query.or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`).maybeSingle()
-                : await query.eq('slug', idOrSlug).maybeSingle();
+            
+            let result;
+            if (isUUID) {
+                result = await query.or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`).maybeSingle();
+            } else {
+                result = await query.eq('slug', idOrSlug).maybeSingle();
+            }
 
+            const { data, error } = result;
             if (data && !error) {
+                console.log(`[db-smart] Found in Supabase: "${idOrSlug}"`);
                 return mergeItinerary(data);
             }
-        } catch (e) {
-            console.warn(`[db-smart] Supabase fetch failed for ${idOrSlug}`);
+            if (error) console.error('[db-smart] Supabase query error:', error.message);
+        } catch (e: any) {
+            console.warn(`[db-smart] Supabase fetch failed: ${e.message}`);
         }
     }
 
     const sql = getNeonSql();
     if (sql) {
         try {
+            console.log(`[db-smart] Retrying with Neon for: "${idOrSlug}"`);
             const rows = await sql`SELECT * FROM quotations WHERE id::text = ${idOrSlug} OR slug = ${idOrSlug} LIMIT 1`;
-            if (rows.length > 0) return mergeItinerary(rows[0]);
-        } catch (e) {
-            console.warn(`[db-smart] Neon fetch failed for ${idOrSlug}`);
+            if (rows.length > 0) {
+                console.log(`[db-smart] Found in Neon: "${idOrSlug}"`);
+                return mergeItinerary(rows[0]);
+            }
+        } catch (e: any) {
+            console.warn(`[db-smart] Neon fetch failed: ${e.message}`);
         }
     }
+
+    console.log(`[db-smart] Quotation not found in any DB: "${idOrSlug}"`);
     return null;
 }
 
@@ -183,9 +198,17 @@ export async function saveBrandSettingsSmart(settings: any) {
 
 function mergeItinerary(record: any) {
     if (!record) return null;
-    const itinerary = typeof record.itinerary === 'string' ? JSON.parse(record.itinerary) : record.itinerary;
+    let itinerary = {};
+    try {
+        itinerary = typeof record.itinerary === 'string' 
+            ? JSON.parse(record.itinerary) 
+            : (record.itinerary || {});
+    } catch (e) {
+        console.error('[db-smart] Failed to parse itinerary for', record.id);
+    }
+    
     return {
-        ...itinerary,
+        ...(typeof itinerary === 'object' ? itinerary : {}),
         id: record.id,
         slug: record.slug,
         createdAt: record.created_at || record.createdAt,

@@ -1,31 +1,24 @@
 
 import { notFound } from "next/navigation";
 import LuxuryQuotationUI from "@/components/LuxuryQuotationUI";
+import { getQuotationSmart } from "@/lib/db-smart";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    let data = null;
+    console.log(`[Page: /quote/${slug}] Fetching smartly...`);
+
+    let data: any = null;
     try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
-        const res = await fetch(`${baseUrl}/api/quotation/${slug}`, {
-            next: { revalidate: 0 }
-        });
-        
-        if (res.ok) {
-            data = await res.json();
-        } else {
-            console.error(`[quote/${slug}] API error:`, res.status);
-        }
-    } catch (e) {
-        console.error(`[quote/${slug}] Fetch error:`, e);
+        data = await getQuotationSmart(slug);
+    } catch (error: any) {
+        console.error(`[Page: /quote/${slug}] Exception:`, error.message);
     }
 
-    // Defensive: check for required fields
-    if (!data || !data.id || !data.slug) {
-        console.error(`[quote/${slug}] Quotation missing required fields. Data:`, data);
+    if (!data) {
+        console.log(`[Page: /quote/${slug}] Data not found. Triggering 404.`);
         return notFound();
     }
 
