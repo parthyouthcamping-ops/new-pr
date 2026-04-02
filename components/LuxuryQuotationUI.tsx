@@ -1119,7 +1119,7 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                                 <img 
                                     src={brand?.companyLogo || "/logo.png"} 
                                     alt={brand?.companyName || "YouthCamping"} 
-                                    className="h-16 md:h-20 w-auto object-contain brightness-0 invert" 
+                                    className="h-16 md:h-20 w-auto object-contain" 
                                     onError={(e) => {
                                         (e.target as HTMLImageElement).src = '/logo.png';
                                     }}
