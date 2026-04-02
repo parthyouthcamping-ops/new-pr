@@ -1,6 +1,7 @@
 
 import { supabase } from './supabase';
 import { neon } from '@neondatabase/serverless';
+import { PREDEFINED_QUOTES } from './itineraries';
 
 const hasSupabase = () => 
     Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) && 
@@ -56,7 +57,12 @@ export async function getQuotationSmart(idOrSlug: string) {
         }
     }
 
-    console.log(`[db-smart] Quotation not found in any DB: "${idOrSlug}"`);
+    console.log(`[db-smart] Quotation not found in remote DBs: "${idOrSlug}". Checking predefined fallback...`);
+    if (PREDEFINED_QUOTES[idOrSlug]) {
+        console.log(`[db-smart] Found in PREDEFINED_QUOTES: "${idOrSlug}"`);
+        return PREDEFINED_QUOTES[idOrSlug];
+    }
+
     return null;
 }
 
@@ -65,28 +71,51 @@ export async function getQuotationSmart(idOrSlug: string) {
  * For now, mostly Supabase as it's the primary.
  */
 export async function getAllQuotationsSmart() {
+    let all: any[] = [];
+    
+    // 1. Get Predefined (Static)
+    const predefined = Object.values(PREDEFINED_QUOTES).map(q => ({
+        ...q,
+        trip_name: q.destination,
+        price: q.highLevelPrice,
+        created_at: q.createdAt
+    }));
+    all = [...predefined];
+
+    // 2. Get from Supabase
     if (hasSupabase()) {
         try {
             const { data, error } = await supabase
                 .from('quotations')
                 .select('id, slug, itinerary, created_at, trip_name, price')
                 .order('created_at', { ascending: false });
-            if (!error && data) return data.map(mergeItinerary);
+            if (!error && data) {
+                const fetched = data.map(mergeItinerary);
+                const predefinedSlugs = new Set(all.map(p => p.slug));
+                fetched.forEach(f => {
+                    if (f && !predefinedSlugs.has(f.slug)) all.push(f);
+                });
+            }
         } catch (e) {
             console.warn(`[db-smart] Supabase getAll failed`);
         }
-    }
-
-    const sql = getNeonSql();
-    if (sql) {
-        try {
-            const rows = await sql`SELECT id, slug, itinerary, created_at, trip_name, price FROM quotations ORDER BY created_at DESC`;
-            return rows.map(mergeItinerary);
-        } catch (e) {
-            console.warn(`[db-smart] Neon getAll failed`);
+    } else {
+        const sql = getNeonSql();
+        if (sql) {
+            try {
+                const rows = await sql`SELECT id, slug, itinerary, created_at, trip_name, price FROM quotations ORDER BY created_at DESC`;
+                const fetched = rows.map(mergeItinerary);
+                const predefinedSlugs = new Set(all.map(p => p.slug));
+                fetched.forEach(f => {
+                    if (f && !predefinedSlugs.has(f.slug)) all.push(f);
+                });
+            } catch (e) {
+                console.warn(`[db-smart] Neon getAll failed`);
+            }
         }
     }
-    return [];
+
+    return all;
 }
 
 /**
