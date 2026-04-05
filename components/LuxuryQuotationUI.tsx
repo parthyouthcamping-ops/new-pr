@@ -443,7 +443,7 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                         images={[
                             ...(q.heroImage ? [q.heroImage] : []),
                             ...(q.experiencePhotos || []),
-                            ...(q.itinerary?.flatMap(d => d.photos || []) || [])
+                            ...(Array.isArray(q.itinerary) ? q.itinerary.flatMap(d => d.photos || []) : [])
                         ].filter(Boolean).slice(0, 10) as string[]} 
                         className="w-full h-full object-cover"
                         interval={6000}
@@ -542,7 +542,7 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                     </div>
 
                     <div className="flex flex-col gap-8 max-w-5xl mx-auto">
-                        {q.itinerary?.map((day, idx) => {
+                        {Array.isArray(q.itinerary) && q.itinerary.map((day, idx) => {
                             const isOpen = expandedDay === day.day;
                             const dayDate = getDayDate(q.travelDates?.from, idx);
                             
