@@ -13,7 +13,7 @@ async function createShimlaManaliPackage() {
         transportOption: "Private Sedan / SUV for Entire Journey (Chandigarh to Chandigarh)",
         roomSharing: "Double Sharing",
         lowLevelPrice: 19500,
-        highLevelPrice: 21500,
+        highLevelPrice: 19500,
         heroImage: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?q=80&w=1974&auto=format&fit=crop",
         coverImage: "https://images.unsplash.com/photo-1597074866923-dc0589150358?q=80&w=2070&auto=format&fit=crop",
         experiencePhotos: [
@@ -33,17 +33,7 @@ async function createShimlaManaliPackage() {
                 photos: ["https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop"]
             }
         ],
-        highLevelHotels: [
-             {
-                id: uuidv4(),
-                name: "The Himalayan (Luxury Boutique)",
-                location: "Shimla & Manali",
-                rating: 5,
-                description: "Luxury castle-style hotel with heated pools, fine dining, and panoramic valley views.",
-                roomType: "Premier Valley View Room",
-                photos: ["https://images.unsplash.com/photo-1582719478250-c89cae4df85b?q=80&w=2070&auto=format&fit=crop"]
-            }
-        ],
+        highLevelHotels: [],
         itinerary: [
             {
                 id: uuidv4(),

@@ -667,22 +667,24 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                             </h2>
                         </div>
                         
-                        {/* Package Selection Toggles */}
-                        <div className="flex bg-[#fcfaf7] p-2 rounded-[1.5rem] shadow-xl shadow-black/5 border border-gray-100 no-print">
-                            {['standard', 'luxury'].map((tier) => (
-                                <button
-                                    key={tier}
-                                    onClick={() => setSelectedTier(tier as any)}
-                                    className={`px-10 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
-                                        selectedTier === tier 
-                                        ? 'bg-primary text-white shadow-2xl shadow-primary/30 scale-105' 
-                                        : 'text-[#6B7280] hover:text-[#111827]'
-                                    }`}
-                                >
-                                    {tier === 'standard' ? 'Choice 01' : 'Choice 02'}
-                                </button>
-                            ))}
-                        </div>
+                        {/* Package Selection Toggles - Only show if both options exist */}
+                        {q.highLevelHotels && q.highLevelHotels.length > 0 && (
+                            <div className="flex bg-[#fcfaf7] p-2 rounded-[1.5rem] shadow-xl shadow-black/5 border border-gray-100 no-print mb-4">
+                                {['standard', 'luxury'].map((tier) => (
+                                    <button
+                                        key={tier}
+                                        onClick={() => setSelectedTier(tier as any)}
+                                        className={`px-10 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
+                                            selectedTier === tier 
+                                            ? 'bg-primary text-white shadow-2xl shadow-primary/30 scale-105' 
+                                            : 'text-[#6B7280] hover:text-[#111827]'
+                                        }`}
+                                    >
+                                        {tier === 'standard' ? 'Choice 01' : 'Choice 02'}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
 
                         <p className="text-[#6B7280] font-bold text-xs md:text-sm uppercase tracking-[0.2em]">
                             Handpicked {selectedTier} accommodations for your comfort
