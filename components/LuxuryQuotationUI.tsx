@@ -1166,7 +1166,7 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
                             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Get In Touch</h4>
                             <div className="space-y-4">
                                 <p className="text-sm font-bold text-white/60 uppercase tracking-widest leading-relaxed">
-                                    New Delhi, India <br />
+                                    Ahmedabad, India <br />
                                     {brand?.phoneNumber || '+91 88000 00000'} <br />
                                     team@youthcamping.in
                                 </p>
