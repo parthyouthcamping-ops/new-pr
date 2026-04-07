@@ -120,7 +120,10 @@ async function createGoaPackage() {
             name: "Parth Sharma",
             whatsapp: "919999999999",
             designation: "Travel Designer"
-        }
+        },
+        cancellationPolicy: "Terms and Conditions Apply",
+        paymentPolicy: "50% Advance for Booking Confirmation",
+        bookingAmount: "₹5,000 / Person"
     };
 
     console.log('--- Creating Goa 4N/5D Package with Dudhsagar ---');
