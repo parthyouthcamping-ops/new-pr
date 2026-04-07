@@ -130,7 +130,7 @@ async function createShimlaManaliPackage() {
         },
         cancellationPolicy: "Booking cancellation according to terms and conditions",
         paymentPolicy: "50% Advance to confirm, balance 7 days before travel.",
-        bookingAmount: "₹5,000 / Person"
+        bookingAmount: "₹3,000 / Person"
     };
 
     console.log('--- Creating Shimla-Manali-Kullu-Kasol Package for Shruti Kansagara ---');
