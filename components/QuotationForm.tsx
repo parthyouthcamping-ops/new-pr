@@ -55,24 +55,25 @@ export default function QuotationForm({ initialData, isEdit = false }: Quotation
     const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`;
 
     const [formData, setFormData] = useState<Partial<Quotation>>({
-        id: uuidv4(),
-        status: "Draft",
-        pax: 2,
-        lowLevelPrice: 24999,
-        highLevelPrice: 44999,
-        travelDates: { from: "", to: "" },
-        duration: "",
-        transportOption: "Private Car",
-        roomSharing: "Double",
-        hotels: [],
-        lowLevelHotels: [],
-        highLevelHotels: [],
-        itinerary: [],
-        customSections: [],
-        experiencePhotos: [],
-        includes: ["Hotel Stay", "All Transfers", "Sightseeing", "Breakfast & Dinner"],
-        exclusions: ["Airfare", "Visa Fees", "Personal Expenses", "Travel Insurance"],
-        expert: { name: "", whatsapp: "" },
+        id: initialData?.id || uuidv4(),
+        status: initialData?.status || "Draft",
+        pax: initialData?.pax || 2,
+        lowLevelPrice: initialData?.lowLevelPrice || 24999,
+        highLevelPrice: initialData?.highLevelPrice || 44999,
+        travelDates: initialData?.travelDates || { from: "", to: "" },
+        duration: initialData?.duration || "",
+        transportOption: initialData?.transportOption || "Private Car",
+        roomSharing: initialData?.roomSharing || "Double",
+        hotels: (initialData?.hotels || []).map(h => ({ ...h, id: h.id || uuidv4() })),
+        lowLevelHotels: (initialData?.lowLevelHotels || []).map(h => ({ ...h, id: h.id || uuidv4() })),
+        highLevelHotels: (initialData?.highLevelHotels || []).map(h => ({ ...h, id: h.id || uuidv4() })),
+        itinerary: (initialData?.itinerary || []).map(d => ({ ...d, id: d.id || uuidv4() })),
+        customSections: (initialData?.customSections || []).map(s => ({ ...s, id: s.id || uuidv4() })),
+        experiencePhotos: initialData?.experiencePhotos || [],
+        includes: initialData?.includes || ["Hotel Stay", "All Transfers", "Sightseeing", "Breakfast & Dinner"],
+        exclusions: initialData?.exclusions || ["Airfare", "Visa Fees", "Personal Expenses", "Travel Insurance"],
+        expert: initialData?.expert || { name: "", whatsapp: "" },
+        journeyMap: initialData?.journeyMap || { summaryTiles: [], stops: [] },
         ...initialData
     });
 
@@ -344,7 +345,7 @@ ${designation}`;
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
                     <div className="hidden sm:flex gap-2 mr-6">
-                        {[1, 2, 3, 4, 5, 6].map(s => (
+                        {[1, 2, 3, 4, 5, 6, 7].map(s => (
                             <div
                                 key={s}
                                 className={`w-8 h-1.5 rounded-full transition-all duration-500 ${s <= step ? 'bg-primary' : 'bg-gray-100'}`}
@@ -798,7 +799,7 @@ ${designation}`;
 
                                 <div className="flex flex-col gap-16">
                                     {formData.itinerary?.map((item, index) => (
-                                        <div key={item.id} className="relative group flex flex-col sm:flex-row gap-6 lg:gap-10">
+                                        <div key={item.id || `itinerary-${index}`} className="relative group flex flex-col sm:flex-row gap-6 lg:gap-10">
                                             <div className="flex sm:flex-col items-center gap-4 shrink-0">
                                                 <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-full bg-primary text-white flex items-center justify-center text-lg lg:text-xl font-black italic shadow-lg shadow-primary/30">
                                                     {item.day}
@@ -837,7 +838,7 @@ ${designation}`;
                                                         <Textarea
                                                             id={`itinerary_activities_${index}`}
                                                             name={`itinerary_activities_${index}`}
-                                                            value={item.activities.join('\n')}
+                                                            value={item.activities?.join('\n') || ""}
                                                             onChange={(e) => {
                                                                 const newItin = [...(formData.itinerary || [])];
                                                                 newItin[index].activities = e.target.value.split('\n');
@@ -1213,7 +1214,7 @@ ${designation}`;
                                         <Textarea
                                             id="includes"
                                             name="includes"
-                                            value={formData.includes?.join('\n')}
+                                            value={formData.includes?.join('\n') || ""}
                                             onChange={(e) => setFormData({ ...formData, includes: e.target.value.split('\n') })}
                                             className="min-h-[150px]"
                                         />
@@ -1223,7 +1224,7 @@ ${designation}`;
                                         <Textarea
                                             id="exclusions"
                                             name="exclusions"
-                                            value={formData.exclusions?.join('\n')}
+                                            value={formData.exclusions?.join('\n') || ""}
                                             onChange={(e) => setFormData({ ...formData, exclusions: e.target.value.split('\n') })}
                                             className="min-h-[150px]"
                                         />
