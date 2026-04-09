@@ -233,10 +233,15 @@ ${designation}`;
             console.log("[QuotationForm] Saving via saveQuotation()...", { slug, id });
             await saveQuotation(quotationToSave as any);
 
-            toast.success("Proposal saved successfully!");
+            toast.success("Proposal saved successfully!", {
+                action: {
+                    label: "View Quote",
+                    onClick: () => window.open(`/quote/${slug}`, '_blank')
+                }
+            });
             
-            // Redirect to the public quotation view
-            router.push(`/quote/${slug}`);
+            // Removed automatic redirect to keep user on the editor
+            // router.push(`/quote/${slug}`);
         } catch (error: any) {
             console.error("[QuotationForm] Save error:", error);
             toast.error(error.message || "Failed to save proposal. Please check your connection.");
