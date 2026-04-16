@@ -656,56 +656,58 @@ export default function LuxuryQuotationUI({ q }: LuxuryQuotationUIProps) {
             </section>
 
             {/* ── STAY / HOTEL OPTIONS SECTION ── */}
-            <section className="py-16 md:py-28 bg-white pdf-section" id="hotels">
-                <div className="container mx-auto px-4 md:px-6">
-                    {/* Section header */}
-                    <div className="flex flex-col items-center text-center mb-16 md:mb-20 space-y-8">
-                        <div className="space-y-4">
-                            <span className="font-handwritten text-4xl text-primary mb-2 block">Premium</span>
-                            <h2 className="text-4xl md:text-7xl font-serif text-[#111827] uppercase tracking-tight leading-none brush-underline pb-4">
-                                Stay Options
-                            </h2>
+            {((q.lowLevelHotels && q.lowLevelHotels.length > 0) || (q.highLevelHotels && q.highLevelHotels.length > 0)) && (
+                <section className="py-16 md:py-28 bg-white pdf-section" id="hotels">
+                    <div className="container mx-auto px-4 md:px-6">
+                        {/* Section header */}
+                        <div className="flex flex-col items-center text-center mb-16 md:mb-20 space-y-8">
+                            <div className="space-y-4">
+                                <span className="font-handwritten text-4xl text-primary mb-2 block">Premium</span>
+                                <h2 className="text-4xl md:text-7xl font-serif text-[#111827] uppercase tracking-tight leading-none brush-underline pb-4">
+                                    Stay Options
+                                </h2>
+                            </div>
+                            
+                            {/* Package Selection Toggles - Only show if both options exist */}
+                            {q.highLevelHotels && q.highLevelHotels.length > 0 && (
+                                <div className="flex bg-[#fcfaf7] p-2 rounded-[1.5rem] shadow-xl shadow-black/5 border border-gray-100 no-print mb-4">
+                                    {['standard', 'luxury'].map((tier) => (
+                                        <button
+                                            key={tier}
+                                            onClick={() => setSelectedTier(tier as any)}
+                                            className={`px-10 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
+                                                selectedTier === tier 
+                                                ? 'bg-primary text-white shadow-2xl shadow-primary/30 scale-105' 
+                                                : 'text-[#6B7280] hover:text-[#111827]'
+                                            }`}
+                                        >
+                                            {tier === 'standard' ? 'Choice 01' : 'Choice 02'}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            <p className="text-[#6B7280] font-bold text-xs md:text-sm uppercase tracking-[0.2em]">
+                                Handpicked {selectedTier} accommodations for your comfort
+                            </p>
                         </div>
-                        
-                        {/* Package Selection Toggles - Only show if both options exist */}
-                        {q.highLevelHotels && q.highLevelHotels.length > 0 && (
-                            <div className="flex bg-[#fcfaf7] p-2 rounded-[1.5rem] shadow-xl shadow-black/5 border border-gray-100 no-print mb-4">
-                                {['standard', 'luxury'].map((tier) => (
-                                    <button
-                                        key={tier}
-                                        onClick={() => setSelectedTier(tier as any)}
-                                        className={`px-10 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-500 whitespace-nowrap ${
-                                            selectedTier === tier 
-                                            ? 'bg-primary text-white shadow-2xl shadow-primary/30 scale-105' 
-                                            : 'text-[#6B7280] hover:text-[#111827]'
-                                        }`}
-                                    >
-                                        {tier === 'standard' ? 'Choice 01' : 'Choice 02'}
-                                    </button>
+
+                        {/* Hotel Cards Grid / Horizontal Scroll */}
+                        <div className="relative">
+                            <div className="flex md:grid md:grid-cols-1 lg:grid-cols-2 gap-6 overflow-x-auto md:overflow-visible no-scrollbar pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 scroll-snap-x-mandatory">
+                                {(selectedTier === 'standard' ? q.lowLevelHotels : q.highLevelHotels)?.map((hotel, idx) => (
+                                    <div key={hotel.id || idx} className="min-w-[85vw] md:min-w-0 scroll-snap-align-start">
+                                        <HotelCard 
+                                            hotel={hotel} 
+                                            isRecommended={idx === 0} 
+                                        />
+                                    </div>
                                 ))}
                             </div>
-                        )}
-
-                        <p className="text-[#6B7280] font-bold text-xs md:text-sm uppercase tracking-[0.2em]">
-                            Handpicked {selectedTier} accommodations for your comfort
-                        </p>
-                    </div>
-
-                    {/* Hotel Cards Grid / Horizontal Scroll */}
-                    <div className="relative">
-                        <div className="flex md:grid md:grid-cols-1 lg:grid-cols-2 gap-6 overflow-x-auto md:overflow-visible no-scrollbar pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 scroll-snap-x-mandatory">
-                            {(selectedTier === 'standard' ? q.lowLevelHotels : q.highLevelHotels)?.map((hotel, idx) => (
-                                <div key={hotel.id || idx} className="min-w-[85vw] md:min-w-0 scroll-snap-align-start">
-                                    <HotelCard 
-                                        hotel={hotel} 
-                                        isRecommended={idx === 0} 
-                                    />
-                                </div>
-                            ))}
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
              {/* Inclusions & Exclusions */}
              <section className="py-16 md:py-24 container mx-auto px-4 md:px-6 pdf-section">

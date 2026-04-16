@@ -25,12 +25,77 @@ async function createKashmirPackage() {
         lowLevelHotels: [
             {
                 id: uuidv4(),
-                name: "Deluxe Hotels & Houseboat",
-                location: "Srinagar, Pahalgam, Jammu",
+                name: "Hotel Grand Sharnam / Similar",
+                location: "Srinagar (3 Nights)",
                 rating: 3,
-                description: "Comfortable deluxe accommodation with authentic Kashmiri interiors and warm hospitality.",
-                roomType: "Double Sharing",
+                description: "A cozy deluxe hotel located near the city center, offering comfortable rooms and warm Kashmiri hospitality.",
+                roomType: "Deluxe Room",
                 photos: ["https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop"]
+            },
+            {
+                id: uuidv4(),
+                name: "Deluxe Houseboat",
+                location: "Dal Lake (1 Night)",
+                rating: 3,
+                description: "Experience the magic of Dal Lake in a traditional wooden houseboat with intricate carvings and lake views.",
+                roomType: "Deluxe Bedroom",
+                photos: ["https://images.unsplash.com/photo-1598324789736-4861f89564a0?q=80&w=2070&auto=format&fit=crop"]
+            },
+            {
+                id: uuidv4(),
+                name: "Hotel Pine Spring / Similar",
+                location: "Pahalgam (1 Night)",
+                rating: 3,
+                description: "Situated amidst the pine forests, this hotel provides a serene atmosphere and easy access to Pahalgam's scenic spots.",
+                roomType: "Standard Room",
+                photos: ["https://images.unsplash.com/photo-1590483734712-426b3846682c?q=80&w=2070&auto=format&fit=crop"]
+            },
+            {
+                id: uuidv4(),
+                name: "Hotel Novelty / Similar",
+                location: "Jammu (2 Nights)",
+                rating: 3,
+                description: "A well-maintained hotel in Jammu city, convenient for railway station access and local temple visits.",
+                roomType: "Deluxe Room",
+                photos: ["https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=2070&auto=format&fit=crop"]
+            }
+        ],
+        highLevelHotels: [
+            {
+                id: uuidv4(),
+                name: "The Lalit Grand Palace / Vivanta Dal View",
+                location: "Srinagar (3 Nights)",
+                rating: 5,
+                description: "Luxury reimagined in the heritage palace of the Maharajas, overlooking the Zabarwan mountains and Dal Lake.",
+                roomType: "Premium Room",
+                photos: ["https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070&auto=format&fit=crop"]
+            },
+            {
+                id: uuidv4(),
+                name: "Luxury Super Deluxe Houseboat",
+                location: "Nigeen Lake (1 Night)",
+                rating: 5,
+                description: "An ultra-luxury houseboat experience in the quieter Nigeen Lake, featuring premium wood interiors and gourmet dining.",
+                roomType: "Suite Room",
+                photos: ["https://images.unsplash.com/photo-1598324789736-4861f89564a0?q=80&w=2070&auto=format&fit=crop"]
+            },
+            {
+                id: uuidv4(),
+                name: "Pahalgam Hotel / WelcomHotel Pine n Peak",
+                location: "Pahalgam (1 Night)",
+                rating: 5,
+                description: "Kashmir's most iconic luxury resort offering breathtaking views of the Lidder River and snow-capped peaks.",
+                roomType: "Superior Room",
+                photos: ["https://images.unsplash.com/photo-1614082242765-7c98ca0f3df3?q=80&w=2070&auto=format&fit=crop"]
+            },
+            {
+                id: uuidv4(),
+                name: "Radisson Blu / Fortune Riviera",
+                location: "Jammu (2 Nights)",
+                rating: 5,
+                description: "The peak of comfort in Jammu, featuring modern amenities, rooftop pools, and premium multi-cuisine dining.",
+                roomType: "City View Suite",
+                photos: ["https://images.unsplash.com/photo-1571401835393-8c5f35328320?q=80&w=2070&auto=format&fit=crop"]
             }
         ],
         itinerary: [
